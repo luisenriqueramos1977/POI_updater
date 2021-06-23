@@ -59,6 +59,10 @@ public class Updater_Main {
 			}
 		}
 		
+		//getting all addresses
+		
+		
+		
 		
 	}
 
