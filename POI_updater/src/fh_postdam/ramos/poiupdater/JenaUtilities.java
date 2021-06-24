@@ -20,6 +20,8 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResIterator;
 
 /**
 *@author Luis Ramos luis.ramos@fh-potsdam.de
@@ -40,14 +42,12 @@ public class JenaUtilities {
 	 * @return aOntModel of aDataset
 	 * 
 	 */
-	public static OntModel readOntModelfromDataset(Dataset aDataset, String aRoot, Model aModel, OntModel aOntModel, OntModelSpec aSpec) {
-		
+	public static OntModel readOntModelfromDataset(Dataset aDataset, String aRoot, Model aModel , OntModelSpec aSpec) {
 		/*
 		 * reading every available dataset
 		 */
-		
 		//reading ontology dataset
-		
+		OntModel aOntModel;
 		aDataset = TDB2Factory.connectDataset(aRoot);
 		aDataset.begin(ReadWrite.READ) ;
 		//onto model of gleif1
@@ -82,6 +82,7 @@ public class JenaUtilities {
 				 	try {
 				 		currentID = "";
 				 		currentID  = PoiInstance.getLabel("id").toString();
+			 			System.out.println("------current ID ---"+currentID);//flag
 				 			if ((ID.equalsIgnoreCase(currentID)) | (ID2.equalsIgnoreCase(currentID))){
 				 			System.out.println("------String found in jena utilities ---"+ID);//flag
 				 			System.out.println("------Found poi instance ---"+PoiInstance);//flag
@@ -93,6 +94,8 @@ public class JenaUtilities {
 				 	}
 				 	catch(java.lang.NullPointerException e) {
 				 		currentID= null;
+				 		PoiInstance = null;
+				 		//System.out.println("error: "+e);
 				 	}
 				 	if (!(currentID==null)) {
 				 		//we add quotation marks and a second option 
@@ -158,7 +161,6 @@ public class JenaUtilities {
 		 */
 		aDataset = TDB2Factory.connectDataset(aRoot);	    
 		aDataset.close();
-		
 	}//end of closeReadOntModelfromDataset
 
 	public static void closeWriteOntModelfromDataset(Dataset aDataset, String aRoot) {
@@ -170,6 +172,88 @@ public class JenaUtilities {
 		aDataset.close();
 	}
 
+	/**
+	 * @param aDataset
+	 * @param aRoot
+	 * @param aModel
+	 * @param aOntModel
+	 * @param aSpec
+	 * @return aOntModel of aDataset
+	 * 
+	 */
+	public static OntModel writeOntModeltoDataset(Dataset aDataset, String aRoot, Model aModel, OntModel aOntModel, OntModelSpec aSpec) {
+		/*
+		 * reading every available dataset
+		 */
+		aDataset = TDB2Factory.connectDataset(aRoot);		
+		aDataset.begin(ReadWrite.WRITE) ;
+		aModel = aDataset.getDefaultModel();
+		aOntModel = ModelFactory.createOntologyModel(aSpec, aModel);
+		return aOntModel;
+		
+	}
+
+	/**
+	 * @param aDate
+	 * @return aDate_xsd
+	 * @throws ParseException
+	 */
 	
+	public static XSDDateTime jenaDate_xsd(String aDate) throws ParseException {
+		XSDDateTime aDate_xsd = null;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");//-uncomment for test
+		//displaying current date and time
+		Calendar cal = Calendar.getInstance();
+		Date current_day = sdf.parse(aDate);
+		cal.setTime(current_day);
+		aDate_xsd = new XSDDateTime(cal);
+		return aDate_xsd;
+	}
+	
+	
+	/**
+	 * This function returns an item from the model, which has a value
+	 * @param aModel
+	 * @param aProperty
+	 * @param aValue
+	 * @return an Individual
+	 */
+	
+	
+	public static Individual getIndividual(OntModel aModel, DatatypeProperty aProperty, String aValue) {
+		Individual anIndividual = null;
+    	Resource aResource = null;
+		ResIterator dmbIte = aModel.listResourcesWithProperty(aProperty, aValue);
+        // list the individuals
+           while (dmbIte.hasNext()) {
+        	   aResource = dmbIte.next();
+           }
+           
+           try {
+               anIndividual =aModel.getIndividual(aResource.toString());
+           }
+           catch (Exception e) {
+        	   
+        	   anIndividual = null;
+           }
+		
+		return anIndividual;
+	}//end of getIndividual
+
+	/**
+	 * @param directory where model is located
+	 * @return the dataset located in the directory
+	 */
+	
+	public static Dataset get_dataset(String directory) {
+		
+		Dataset dataset = TDB2Factory.connectDataset(directory) ;
+
+		return dataset;
+		
+	}//end of 
+
+
+
 
 }//JenaUtilities

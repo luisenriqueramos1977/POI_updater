@@ -2,6 +2,7 @@ package fh_postdam.ramos.poiupdater;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.management.loading.PrivateClassLoader;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.apache.commons.io.filefilter.AndFileFilter;
@@ -11,20 +12,116 @@ import org.xml.sax.SAXException;
 import org.w3c.dom.Node;  
 import org.w3c.dom.Element;  
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.ontology.Individual;
+import org.apache.jena.ontology.ObjectProperty;
+import org.apache.jena.ontology.DatatypeProperty;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.tdb2.TDB2Factory;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.system.Txn;
+import org.apache.jena.util.FileManager;
+
 
 
 public class Updater_Main {
+	//concepts
 	
+	private static OntClass  Classification;
+	private static DatatypeProperty revision;
+	public static DatatypeProperty  name;
+	public static DatatypeProperty tstamp;
+	public static DatatypeProperty id;
+	
+
+	
+	/*
+	 * main variables of the system
+	 */
+	
+	private static Model PoiModel;
+	//poi dataset  
+	private static Dataset PoiDataset;
+	private static String Poi_DB_root = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
+	private static OntModel PoiOntModel;
 	/*
 	 * this is a first attemp to parser and upload data
 	 */
 	
 	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException {
 		
+		String POI_URL = "https://www.reiseland-brandenburg.de/poi";
+		String POI_NS = POI_URL+"#";
+		
+		//getting the file
+		
+		//final String inputOntology = "C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi.rdf";
+		
+		final String aRoot = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
+		
+		//first, we create the model specification
+        //FileInputStream fileInputStream = new FileInputStream(inputOntology);
+        //if (fileInputStream == null) {
+         //   throw new IllegalArgumentException( "File: " + inputOntology + " not found");
+        //}
+     // create an empty model
+        //Model model = ModelFactory.createDefaultModel();
+        // read the RDF/XML file
+        //model.read(fileInputStream, "");
+        // write it to standard out
+        //model.write(System.out); 
+        //Dataset ds = TDB2Factory.connectDataset(aRoot);
+       // Txn.executeWrite(ds, ()-> {RDFDataMgr.read(ds, inputOntology);});
+        
+        //Txn.executeRead(ds, ()->{
+        //    RDFDataMgr.write(System.out, ds, Lang.TRIG) ;
+        //}) ;
+        //saving dataset 
+      //closing writing
+       // ds.close();
+        
+        //setting up ontmodel
+
+        
+        
+	    OntModelSpec spec = new OntModelSpec(OntModelSpec.OWL_MEM);//add as parameter
+	     
+	    
+	     /*
+		* reading every available dataset
+		*/
+		//reading poi database
+	     PoiDataset = TDB2Factory.connectDataset(Poi_DB_root);
+	     PoiDataset.begin(ReadWrite.READ) ;
+	   //onto model of gleif1
+
+		PoiModel = PoiDataset.getDefaultModel() ;
+		PoiOntModel = ModelFactory.createOntologyModel(spec, PoiModel);
+		//PoiOntModel.write(System.out); flag for checking the model
+		
+		//getting all model concpets and properties
+		Classification = PoiOntModel.getOntClass(POI_NS + "Classification" );
+		revision = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		name = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		id = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		
+		/*
+		 * with the ontmodel loaded in memory, we proceed to check wheter or not there are present element
+		 */
+		
 		//creating a constructor of file class and parsing an XML file  
 		File file = new File("C:\\Users\\luis.ramos\\Downloads\\ssl.backoffice2.reiseland-brandenburg.de.xml");  
-		
 		//an instance of factory that gives a document builder  
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  
 		//an instance of builder to parse the specified xml file  
@@ -40,18 +137,31 @@ public class Updater_Main {
 				Element eElement = (Element) node;  
 				try {
 					 //System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-					 String language = eElement.getAttributes().getNamedItem("language").getNodeValue();
-			         String revision= eElement.getAttributes().getNamedItem("revision").getNodeValue();
-			         String  name = eElement.getAttributes().getNamedItem("name").getNodeValue();
-			         String tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
-			         String id = eElement.getAttributes().getNamedItem("id").getNodeValue();
-			         if ((language != null)&& (revision != null) && (name != null) && (tstamp!= null) && (id!= null) ) {
-						 System.out.println("\nNode Name :" + node.getNodeName()); 
-			        	 System.out.println("classification id: "+id);
-			        	 System.out.println("classification language: "+language);
-				         System.out.println("classification revision: "+eElement.getAttributes().getNamedItem("revision").getNodeValue());
-				         System.out.println("classification name: "+eElement.getAttributes().getNamedItem("name").getNodeValue());
-				         System.out.println("classification tstamp: "+eElement.getAttributes().getNamedItem("tstamp").getNodeValue());
+					 String str_language = eElement.getAttributes().getNamedItem("language").getNodeValue();
+			         String str_revision= eElement.getAttributes().getNamedItem("revision").getNodeValue();
+			         String  str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
+			         String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
+			         String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+			         if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ) {
+						 //System.out.println("\nNode Name :" + node.getNodeName()); 
+			        	 System.out.println("classification id: "+str_id);
+			        	 //System.out.println("classification language: "+language);
+				         //System.out.println("classification revision: "+revision);
+				         //System.out.println("classification name: "+name);
+				         //System.out.println("classification tstamp: "+tstamp);
+				         //checking if individual exist
+				 		 Individual PoiInstance = JenaUtilities.getIndividualbyID(POI_NS, "Classification", PoiOntModel, str_id);
+				 		 if (PoiInstance==null) {
+							//create instance with these values
+				 			 System.out.println("no found individual with id: "+id);
+				 			 //we must create the individual with ist corresponding values
+				 			 
+						} else {
+							//check revision, if corresponds, then everything is okay
+				 			 System.out.println("poi instance : "+PoiInstance);
+				 			 
+						}
+
 					}
 				} catch (Exception e) {
 					// TODO: handle exception
@@ -65,5 +175,8 @@ public class Updater_Main {
 		
 		
 	}
+
+
+	
 
 }
