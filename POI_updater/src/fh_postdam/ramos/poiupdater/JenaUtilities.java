@@ -5,6 +5,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+import org.w3c.dom.Node;  
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.Individual;
@@ -69,11 +74,11 @@ public class JenaUtilities {
 		Individual PoiInstance = null;
 		anIndClass = ontModel.getOntClass( ns + IndClass );
 		String currentID = "";
-		System.out.println("anIndClass  "+anIndClass);//flag
-		System.out.println("String id to be searched "+ID);//flag
+		//System.out.println("anIndClass  "+anIndClass);//flag
+		//System.out.println("String id to be searched "+ID);//flag
 		//adapting ord
 		String ID2 = "\""+ID+"\"";
-		System.out.println("String ID modified "+ID2);//flag
+		//System.out.println("String ID modified "+ID2);//flag
 		 ExtendedIterator  model_items = anIndClass.listInstances();//here I get all instances in model
 			//begins loop 
 			 while (model_items.hasNext())
@@ -220,7 +225,7 @@ public class JenaUtilities {
 	 */
 	
 	
-	public static Individual getIndividual(OntModel aModel, DatatypeProperty aProperty, String aValue) {
+	public static Individual getIndividualbyPropertyvalue(OntModel aModel, DatatypeProperty aProperty, String aValue) {
 		Individual anIndividual = null;
     	Resource aResource = null;
 		ResIterator dmbIte = aModel.listResourcesWithProperty(aProperty, aValue);
@@ -254,6 +259,32 @@ public class JenaUtilities {
 	}//end of 
 
 
+	public static XSDDateTime timestamptoJenaDate_xsd(String aDate) {
+		XSDDateTime aDate_xsd = null;
+		Long long_tstamp = Long.parseLong(aDate);
+		java.util.Date date_tstamp=new java.util.Date(long_tstamp*1000);
+		//displaying current date and time
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date_tstamp);
+		aDate_xsd = new XSDDateTime(cal);
+		return aDate_xsd;
+	}
 
 
+	/**
+	 * @param parent
+	 * @param child
+	 * @return
+	 */
+	
+	public static Node getFirstChildNodeByName (Node parent, String child) {
+		  NodeList childNodes = parent.getChildNodes();
+		  Node aNodeChild = null;
+		  for (int i = 0; i < childNodes.getLength(); i++) {
+		    if (childNodes.item(i).getNodeName().equals(child)) {
+		      aNodeChild = childNodes.item(i);
+		    }
+		  }
+		return aNodeChild;
+	}//
 }//JenaUtilities

@@ -15,11 +15,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.ontology.Individual;
 import org.apache.jena.ontology.ObjectProperty;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
@@ -38,10 +43,13 @@ public class Updater_Main {
 	//concepts
 	
 	private static OntClass  Classification;
-	private static DatatypeProperty revision;
-	public static DatatypeProperty  name;
-	public static DatatypeProperty tstamp;
-	public static DatatypeProperty id;
+	private static DatatypeProperty poi_revision;
+	public static DatatypeProperty  poi_name;
+	public static DatatypeProperty poi_tstamp;
+	public static DatatypeProperty poi_id;
+	public static DatatypeProperty poi_language;
+
+	
 	
 
 	
@@ -58,7 +66,7 @@ public class Updater_Main {
 	 * this is a first attemp to parser and upload data
 	 */
 	
-	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException {
+	public static void main(String[] args) {
 		
 		String POI_URL = "https://www.reiseland-brandenburg.de/poi";
 		String POI_NS = POI_URL+"#";
@@ -102,20 +110,28 @@ public class Updater_Main {
 		*/
 		//reading poi database
 	     PoiDataset = TDB2Factory.connectDataset(Poi_DB_root);
-	     PoiDataset.begin(ReadWrite.READ) ;
+	     PoiDataset.begin(ReadWrite.WRITE) ;
 	   //onto model of gleif1
 
 		PoiModel = PoiDataset.getDefaultModel() ;
 		PoiOntModel = ModelFactory.createOntologyModel(spec, PoiModel);
 		//PoiOntModel.write(System.out); flag for checking the model
 		
-		//getting all model concpets and properties
+		//getting every model classes and properties
 		Classification = PoiOntModel.getOntClass(POI_NS + "Classification" );
-		revision = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
-		name = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
-		tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
-		id = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		poi_revision = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
+		poi_name = PoiOntModel.getDatatypeProperty(POI_NS + "name");
+		poi_tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "tstamp");
+		poi_id = PoiOntModel.getDatatypeProperty(POI_NS + "id");
+		poi_language = PoiOntModel.getDatatypeProperty(POI_NS + "language");
 		
+		System.out.println(Classification);
+		System.out.println(poi_revision);
+		System.out.println(poi_name);
+		System.out.println(poi_tstamp);
+		System.out.println(poi_id);
+		System.out.println(poi_language);
+
 		/*
 		 * with the ontmodel loaded in memory, we proceed to check wheter or not there are present element
 		 */
@@ -125,8 +141,24 @@ public class Updater_Main {
 		//an instance of factory that gives a document builder  
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  
 		//an instance of builder to parse the specified xml file  
-		DocumentBuilder db = dbf.newDocumentBuilder();  
-		Document doc = db.parse(file);  
+		
+		DocumentBuilder db = null;
+		try {
+			db = dbf.newDocumentBuilder();
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}  
+		
+		Document doc = null;
+		try {
+			doc = db.parse(file);
+		} catch (SAXException | IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}  
+		
+		
 		doc.getDocumentElement().normalize();  
 		System.out.println("Root element: " + doc.getDocumentElement().getNodeName()); 
 		//listing all classifification objects
@@ -145,21 +177,48 @@ public class Updater_Main {
 			         if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ) {
 						 //System.out.println("\nNode Name :" + node.getNodeName()); 
 			        	 System.out.println("classification id: "+str_id);
-			        	 //System.out.println("classification language: "+language);
-				         //System.out.println("classification revision: "+revision);
-				         //System.out.println("classification name: "+name);
-				         //System.out.println("classification tstamp: "+tstamp);
 				         //checking if individual exist
-				 		 Individual PoiInstance = JenaUtilities.getIndividualbyID(POI_NS, "Classification", PoiOntModel, str_id);
-				 		 if (PoiInstance==null) {
-							//create instance with these values
-				 			 System.out.println("no found individual with id: "+id);
-				 			 //we must create the individual with ist corresponding values
-				 			 
+				 		 Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+				 		 
+				 		// System.out.println("this instance: "+PoiInstance);
+				 		 
+				 		 if (PoiInstance == null) {
+					 		 System.out.println("null loop ");
+				 			 //conversion to valid time stamp
+					 		 try {
+					 			 //doing tstamp to xsd format exchange
+					 			XSDDateTime aDate_xsd = null;
+					 			aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
+					 			System.out.println("jena date: "+aDate_xsd);
+					 			 //and add it to tdb2
+					 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+					 			PoiInstance.addLiteral(poi_id, str_id);
+					 			PoiInstance.addLiteral(poi_language, str_id);
+					 			PoiInstance.addLiteral(poi_revision, str_revision);
+					 			PoiInstance.addLiteral(poi_name, str_name);
+					 			PoiInstance.addLiteral(poi_tstamp, aDate_xsd);
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println(e.toString());
+							}
 						} else {
 							//check revision, if corresponds, then everything is okay
 				 			 System.out.println("poi instance : "+PoiInstance);
-				 			 
+				 			 //getting parents if any
+				 			 NodeList parentList = (NodeList) JenaUtilities.getFirstChildNodeByName(node, "parents");
+				 			 System.out.println("parentList: "+parentList.getLength());
+				 			 for (int ichild = 0; ichild < parentList.getLength(); ichild++) {
+				 				  System.out.println(parentList.item(ichild).getNodeName().toString());
+				 				  //if item is classification!!!
+				 				  Node node_parent = parentList.item(ichild);  
+				 				  if (node.getNodeType() == Node.ELEMENT_NODE) {
+				 					Element element_parent = (Element) node_parent; 
+							        String str_parent_id = element_parent.getAttributes().getNamedItem("id").getNodeValue();
+							        System.out.println("str_parent_id: "+str_parent_id);
+				 					
+				 				  }
+				 			}//end for childNodes
+				 		
 						}
 
 					}
@@ -167,7 +226,13 @@ public class Updater_Main {
 					// TODO: handle exception
 				}
 			}
-		}
+		}//end for
+		
+		//closing comunication with origin databases
+		PoiDataset.commit();
+		PoiDataset.close();
+		
+
 		
 		//getting all addresses
 		
