@@ -215,6 +215,7 @@ public class Updater_Main {
 				 					Element element_parent = (Element) node_parent; 
 							        String str_parent_id = element_parent.getAttributes().getNamedItem("id").getNodeValue();
 							        System.out.println("str_parent_id: "+str_parent_id);
+							        //link classification to parents
 				 					
 				 				  }
 				 			}//end for childNodes
