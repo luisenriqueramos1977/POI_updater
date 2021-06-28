@@ -1,8 +1,10 @@
 package fh_postdam.ramos.poiupdater;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Node;  
@@ -19,8 +21,12 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.tdb2.TDB2Factory;
@@ -287,4 +293,47 @@ public class JenaUtilities {
 		  }
 		return aNodeChild;
 	}//
+	
+	//get all individuals linked to this object by this property, if any
+	
+	/**
+	 * @param aModel
+	 * @param anIndividual
+	 * @param aProperty
+	 * @return list of individuals with a rdf property
+	 */
+	public static List<Individual> getLinkedIndividualsbyProperty(OntModel aModel, Individual anIndividual, Property aProperty) {
+	    List<Individual> myindividuals = new ArrayList<>();
+        	NodeIterator dmbIte = anIndividual.listPropertyValues(aProperty);
+            // list the individuals
+               while (dmbIte.hasNext()) {
+                   RDFNode node = dmbIte.next();
+                   //getting the individual
+                   anIndividual =aModel.getIndividual(node.toString());
+                   myindividuals.add(anIndividual);
+               }
+		return myindividuals;
+	}//end of getIndividual
+	
+	
+	/**
+	 * @param myindividuals
+	 * @param aProperty
+	 * @param aValue
+	 * @return this_individual if there is an individual with such a value
+	 */
+	public static boolean checkIndividualinListbyLiteralValue(List<Individual> myindividuals, Property aProperty, String aValue) {
+		
+		//iterate over individuals to get id
+    	for (int ind = 0; ind < myindividuals.size(); ind++) {
+            Individual this_individual = myindividuals.get(ind);
+            Literal thisValue = (Literal) this_individual.getPropertyValue(aProperty);
+            if (aValue.equalsIgnoreCase(thisValue.getValue().toString())) {
+                //System.out.println("there is an individual that match with this value "+thisValue.getValue().toString());
+        		return true;
+			}
+        }
+		return false;
+	}
+	
 }//JenaUtilities

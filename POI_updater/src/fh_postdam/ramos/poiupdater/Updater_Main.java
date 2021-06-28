@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.ontology.Individual;
@@ -32,6 +35,10 @@ import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.system.Txn;
@@ -43,11 +50,17 @@ public class Updater_Main {
 	//concepts
 	
 	private static OntClass  Classification;
+	//poi properties
 	private static DatatypeProperty poi_revision;
 	public static DatatypeProperty  poi_name;
 	public static DatatypeProperty poi_tstamp;
 	public static DatatypeProperty poi_id;
 	public static DatatypeProperty poi_language;
+	public static DatatypeProperty poi_equis;
+	public static DatatypeProperty poi_ye;
+	public static ObjectProperty poi_parents;
+	//rdf standard properties
+	public static Property rdf_ns_type;
 
 	
 	
@@ -70,6 +83,14 @@ public class Updater_Main {
 		
 		String POI_URL = "https://www.reiseland-brandenburg.de/poi";
 		String POI_NS = POI_URL+"#";
+		String xs= "http://www.w3.org/2001/XMLSchema#";
+		String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns";
+		String rdf_ns = rdf+"#";
+		String rdfs = "http://www.w3.org/2000/01/rdf-schema";
+		String rdfs_ns = rdfs+"#";
+		String xml="xml:";
+		String xml_ns =xml+"#";
+
 		
 		//getting the file
 		
@@ -124,6 +145,9 @@ public class Updater_Main {
 		poi_tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "tstamp");
 		poi_id = PoiOntModel.getDatatypeProperty(POI_NS + "id");
 		poi_language = PoiOntModel.getDatatypeProperty(POI_NS + "language");
+		poi_equis = PoiOntModel.getDatatypeProperty(POI_NS + "language");
+		poi_ye = PoiOntModel.getDatatypeProperty(POI_NS + "language");
+		rdf_ns_type = PoiOntModel.getProperty(rdf_ns + "type");
 		
 		System.out.println(Classification);
 		System.out.println(poi_revision);
@@ -131,6 +155,10 @@ public class Updater_Main {
 		System.out.println(poi_tstamp);
 		System.out.println(poi_id);
 		System.out.println(poi_language);
+		System.out.println(poi_equis);
+		System.out.println(poi_ye);
+		System.out.println(rdf_ns_type);
+
 
 		/*
 		 * with the ontmodel loaded in memory, we proceed to check wheter or not there are present element
@@ -176,20 +204,20 @@ public class Updater_Main {
 			         String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
 			         if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ) {
 						 //System.out.println("\nNode Name :" + node.getNodeName()); 
-			        	 System.out.println("classification id: "+str_id);
+			        	 //System.out.println("classification id: "+str_id);
 				         //checking if individual exist
 				 		 Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
 				 		 
 				 		// System.out.println("this instance: "+PoiInstance);
 				 		 
 				 		 if (PoiInstance == null) {
-					 		 System.out.println("null loop ");
+					 		 //System.out.println("null loop ");
 				 			 //conversion to valid time stamp
 					 		 try {
 					 			 //doing tstamp to xsd format exchange
 					 			XSDDateTime aDate_xsd = null;
 					 			aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
-					 			System.out.println("jena date: "+aDate_xsd);
+					 			//System.out.println("jena date: "+aDate_xsd);
 					 			 //and add it to tdb2
 					 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
 					 			PoiInstance.addLiteral(poi_id, str_id);
@@ -203,22 +231,51 @@ public class Updater_Main {
 							}
 						} else {
 							//check revision, if corresponds, then everything is okay
-				 			 System.out.println("poi instance : "+PoiInstance);
+				 			 //System.out.println("poi instance : "+PoiInstance);
 				 			 //getting parents if any
 				 			 NodeList parentList = (NodeList) JenaUtilities.getFirstChildNodeByName(node, "parents");
-				 			 System.out.println("parentList: "+parentList.getLength());
-				 			 for (int ichild = 0; ichild < parentList.getLength(); ichild++) {
-				 				  System.out.println(parentList.item(ichild).getNodeName().toString());
-				 				  //if item is classification!!!
-				 				  Node node_parent = parentList.item(ichild);  
-				 				  if (node.getNodeType() == Node.ELEMENT_NODE) {
-				 					Element element_parent = (Element) node_parent; 
-							        String str_parent_id = element_parent.getAttributes().getNamedItem("id").getNodeValue();
-							        System.out.println("str_parent_id: "+str_parent_id);
-							        //link classification to parents
-				 					
-				 				  }
-				 			}//end for childNodes
+				 			 //System.out.println("parentList size: "+parentList.getLength());
+				 			 //if some parents we iterate
+				 			 if (parentList.getLength()>0) {
+				 				 //the we iterate over the list
+				 				for (int ichild = 0; ichild < parentList.getLength(); ichild++) {
+					 				  //System.out.println(parentList.item(ichild).getNodeName().toString());
+					 				  //if node is classification type, then we continue
+					 				  if (parentList.item(ichild).getNodeName().toString()=="classification") {
+					 					//if item is classification!!!
+						 				  Node node_parent = parentList.item(ichild);  
+						 				  if (node.getNodeType() == Node.ELEMENT_NODE) {
+						 					Element element_parent = (Element) node_parent; 
+									        String str_parent_id = element_parent.getAttributes().getNamedItem("id").getNodeValue();
+									        //System.out.println("str_parent_id: "+str_parent_id);
+									        //check if object with such relation is present
+										    List<Individual> myindividuals = new ArrayList<>();
+										    try {
+										    	myindividuals= JenaUtilities.getLinkedIndividualsbyProperty(PoiOntModel, PoiInstance, rdf_ns_type);
+										    	boolean ind_present = JenaUtilities.checkIndividualinListbyLiteralValue(myindividuals, poi_id, str_parent_id);
+										    	//iterate over individuals to get id
+										        if (! ind_present) {//if no individual linked with this property value, we create it
+													//then we proceed to get the indvidual with this id
+										        	try {
+										        		Individual linking_individual = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_parent_id);
+											 			PoiInstance.addProperty(rdf_ns_type, linking_individual);
+													} catch (Exception e) {
+														// TODO: handle exception
+														//Ojo to log system
+														System.out.println("warning: no individual with this id: "+str_parent_id);
+													}
+													
+												}
+											    
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+						 				  }
+					 				  }
+					 				  
+					 			 }//end for childNodes
+				 			 }//end if parentList size
+				 			 
 				 		
 						}
 
@@ -227,7 +284,66 @@ public class Updater_Main {
 					// TODO: handle exception
 				}
 			}
-		}//end for
+		}//end for classification
+		
+		//***************  getting every available coordinate instance ******************
+		
+		NodeList coordinateList = doc.getElementsByTagName("coordinate");  
+		System.out.println("number of coordinates: "+coordinateList.getLength());
+		for (int i = 0; i < coordinateList.getLength(); i++) {
+			Node node = coordinateList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				// get text
+				try {
+					String equis = eElement.getElementsByTagName("x").item(0).getTextContent();
+	                String ye = eElement.getElementsByTagName("y").item(0).getTextContent();
+	                String coordinateType = eElement.getElementsByTagName("type").item(0).getTextContent();
+	                System.out.println("ye : " + ye);
+	                System.out.println("equi : " + equis);
+	                System.out.println("coordinate Type : " + coordinateType);
+	                //check if exist individual with x and y coordinates
+	                Individual anIndividual = null;
+	            	Resource aResource = null;
+	        		ResIterator dmbIte = PoiOntModel.listResourcesWithProperty(poi_equis, equis);
+	                // if there is any individual, we search for y, if not, we create the individual
+	        		if (dmbIte.hasNext()) {
+	        			System.out.println(" dmtie not null");
+	        			boolean existing_resource;
+	        			while (dmbIte.hasNext()) {
+		                	aResource = dmbIte.next();
+			                anIndividual =PoiOntModel.getIndividual(aResource.toString());
+			                Literal y_value = (Literal) anIndividual.getPropertyValue(poi_ye);
+			                if (y_value.toString().equalsIgnoreCase(ye)) {
+			                	existing_resource=true;
+								break;
+							} else {
+								existing_resource=false;
+							}
+			                //checking if result exist
+			                if (! existing_resource) {
+								System.out.println("no y coordinate");
+							}//if resource does not exist
+		                }
+					} else {
+						System.out.println("no x coordinate");
+						System.out.println("must create object as: coordinate_"+equis+"_"+ye);
+					}
+	        		
+	               
+	                
+	                
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				}
+                
+			}//if node
+			
+		}//end for coordinateList
+
+		
+		
 		
 		//closing comunication with origin databases
 		PoiDataset.commit();
