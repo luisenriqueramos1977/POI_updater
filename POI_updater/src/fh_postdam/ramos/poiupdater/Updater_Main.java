@@ -13,6 +13,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;  
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -50,6 +52,7 @@ public class Updater_Main {
 	//concepts
 	
 	private static OntClass  Classification;
+	private static OntClass  Coordinate;
 	//poi properties
 	private static DatatypeProperty poi_revision;
 	public static DatatypeProperty  poi_name;
@@ -58,6 +61,8 @@ public class Updater_Main {
 	public static DatatypeProperty poi_language;
 	public static DatatypeProperty poi_equis;
 	public static DatatypeProperty poi_ye;
+	public static DatatypeProperty poi_coordinateType;
+	
 	public static ObjectProperty poi_parents;
 	//rdf standard properties
 	public static Property rdf_ns_type;
@@ -140,16 +145,20 @@ public class Updater_Main {
 		
 		//getting every model classes and properties
 		Classification = PoiOntModel.getOntClass(POI_NS + "Classification" );
+		Coordinate = PoiOntModel.getOntClass(POI_NS + "Coordinate" );
 		poi_revision = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
 		poi_name = PoiOntModel.getDatatypeProperty(POI_NS + "name");
 		poi_tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "tstamp");
 		poi_id = PoiOntModel.getDatatypeProperty(POI_NS + "id");
 		poi_language = PoiOntModel.getDatatypeProperty(POI_NS + "language");
-		poi_equis = PoiOntModel.getDatatypeProperty(POI_NS + "language");
-		poi_ye = PoiOntModel.getDatatypeProperty(POI_NS + "language");
+		poi_equis = PoiOntModel.getDatatypeProperty(POI_NS + "x_type");
+		poi_ye = PoiOntModel.getDatatypeProperty(POI_NS + "y_type");
+		poi_coordinateType = PoiOntModel.getDatatypeProperty(POI_NS + "coordinateType");
+		
 		rdf_ns_type = PoiOntModel.getProperty(rdf_ns + "type");
 		
 		System.out.println(Classification);
+		System.out.println(Coordinate);
 		System.out.println(poi_revision);
 		System.out.println(poi_name);
 		System.out.println(poi_tstamp);
@@ -157,6 +166,7 @@ public class Updater_Main {
 		System.out.println(poi_language);
 		System.out.println(poi_equis);
 		System.out.println(poi_ye);
+		System.out.println(poi_coordinateType);
 		System.out.println(rdf_ns_type);
 
 
@@ -299,36 +309,59 @@ public class Updater_Main {
 					String equis = eElement.getElementsByTagName("x").item(0).getTextContent();
 	                String ye = eElement.getElementsByTagName("y").item(0).getTextContent();
 	                String coordinateType = eElement.getElementsByTagName("type").item(0).getTextContent();
-	                System.out.println("ye : " + ye);
-	                System.out.println("equi : " + equis);
-	                System.out.println("coordinate Type : " + coordinateType);
+	                //System.out.println("ye : " + ye);
+	                //System.out.println("equi : " + equis);
+	                //System.out.println("coordinate Type : " + coordinateType);
+	                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
 	                //check if exist individual with x and y coordinates
 	                Individual anIndividual = null;
 	            	Resource aResource = null;
-	        		ResIterator dmbIte = PoiOntModel.listResourcesWithProperty(poi_equis, equis);
+	        		ResIterator dmbIte = PoiOntModel.listResourcesWithProperty(poi_equis, Float.parseFloat(equis));
+	        
 	                // if there is any individual, we search for y, if not, we create the individual
 	        		if (dmbIte.hasNext()) {
-	        			System.out.println(" dmtie not null");
-	        			boolean existing_resource;
+	        			//System.out.println(" some resource with value "+equis);
+	        			boolean existing_resource = false;
 	        			while (dmbIte.hasNext()) {
 		                	aResource = dmbIte.next();
 			                anIndividual =PoiOntModel.getIndividual(aResource.toString());
+			                //System.out.println("individual to be compared: "+anIndividual);
 			                Literal y_value = (Literal) anIndividual.getPropertyValue(poi_ye);
-			                if (y_value.toString().equalsIgnoreCase(ye)) {
+			                //System.out.println("individuals literal float value: "+y_value.getFloat());
+			                if (Float.toString(y_value.getFloat()).contains(ye)) {
 			                	existing_resource=true;
+								System.out.println("coordinate resource "+coordinate_x_y+ " just exist");
 								break;
 							} else {
 								existing_resource=false;
 							}
 			                //checking if result exist
-			                if (! existing_resource) {
-								System.out.println("no y coordinate");
-							}//if resource does not exist
-		                }
+		                }//end of while
+	        			
+	        			 if (! existing_resource) {
+								//System.out.println("no y coordinate");
+								coordinate_x_y = "coordinate_"+equis+"_"+ye;
+								System.out.println("must create object as: "+coordinate_x_y);
+								//creating coordinate individual
+								 //and add it to tdb2
+								Individual PoiCoordinate = PoiOntModel.createIndividual( POI_NS +  coordinate_x_y,  Coordinate); 
+								PoiCoordinate.addLiteral(poi_equis, Float.parseFloat(equis));
+								PoiCoordinate.addLiteral(poi_ye, Float.parseFloat(ye));
+								PoiCoordinate.addLiteral(poi_coordinateType, coordinateType);
+						}//if resource does not exist
+	        			 
 					} else {
 						System.out.println("no x coordinate");
-						System.out.println("must create object as: coordinate_"+equis+"_"+ye);
-					}
+						coordinate_x_y = "coordinate_"+equis+"_"+ye;
+						System.out.println("must create object as: "+coordinate_x_y);
+						//must create generic method, individual with n properties
+						//creating coordinate individual
+						 //and add it to tdb2
+						Individual PoiCoordinate = PoiOntModel.createIndividual( POI_NS +  coordinate_x_y,  Coordinate); 
+						PoiCoordinate.addLiteral(poi_equis, Float.parseFloat(equis));
+						PoiCoordinate.addLiteral(poi_ye, Float.parseFloat(ye));
+						PoiCoordinate.addLiteral(poi_coordinateType, coordinateType);
+					}//end if to check existence
 	        		
 	               
 	                
@@ -342,9 +375,44 @@ public class Updater_Main {
 			
 		}//end for coordinateList
 
+		//printing result
 		
+		//defining basic variables
+		FileOutputStream poi_out_file = null;
+        File poi_file;
+        //reading data
+		try {
+			poi_file = new File("C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi_parsed.rdf");
+			poi_out_file = new FileOutputStream(poi_file);
+			// if file doesnt exists, then create it
+            if (!poi_file.exists()) {
+            	poi_file.createNewFile();
+            }
+            //adding content
+            //PoiOntModel.write(System.out,"RDF/XML");
+         // get the content in bytes
+            byte[] contentInBytes = PoiOntModel.toString().getBytes();
+
+            poi_out_file.write(contentInBytes);
+            poi_out_file.flush();
+            poi_out_file.close();
+
+            System.out.println("parsed printed Done");
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+            try {
+                if (poi_out_file != null) {
+                	poi_out_file.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 		
-		
+	    
 		//closing comunication with origin databases
 		PoiDataset.commit();
 		PoiDataset.close();
