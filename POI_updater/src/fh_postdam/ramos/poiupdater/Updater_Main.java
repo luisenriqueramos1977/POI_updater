@@ -374,6 +374,8 @@ public class Updater_Main {
 			}//if node
 			
 		}//end for coordinateList
+		
+		
 
 		//printing result
 		
