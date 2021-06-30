@@ -43,6 +43,7 @@ import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.shared.CannotCreateException;
 import org.apache.jena.system.Txn;
 import org.apache.jena.util.FileManager;
 
@@ -53,6 +54,16 @@ public class Updater_Main {
 	
 	private static OntClass  Classification;
 	private static OntClass  Coordinate;
+	private static OntClass  District;
+	private static OntClass  Department;
+	private static OntClass  Region;
+	private static OntClass  Excursionsregion;
+	private static OntClass  Aquaticsdistrict;
+	private static OntClass  State;
+	private static OntClass  Location;
+	
+	
+	
 	//poi properties
 	private static DatatypeProperty poi_revision;
 	public static DatatypeProperty  poi_name;
@@ -129,6 +140,9 @@ public class Updater_Main {
         
         
 	    OntModelSpec spec = new OntModelSpec(OntModelSpec.OWL_MEM);//add as parameter
+	    
+	    
+	    Aquaticsdistrict 
 	     
 	    
 	     /*
@@ -146,6 +160,15 @@ public class Updater_Main {
 		//getting every model classes and properties
 		Classification = PoiOntModel.getOntClass(POI_NS + "Classification" );
 		Coordinate = PoiOntModel.getOntClass(POI_NS + "Coordinate" );
+		
+		District = PoiOntModel.getOntClass(POI_NS + "District" );
+		Department = PoiOntModel.getOntClass(POI_NS + "Department" );
+		Region = PoiOntModel.getOntClass(POI_NS + "Region" );
+		Excursionsregion = PoiOntModel.getOntClass(POI_NS + "Excursionsregion" );
+		Aquaticsdistrict = PoiOntModel.getOntClass(POI_NS + "Aquaticsdistrict" );
+		State = PoiOntModel.getOntClass(POI_NS + "State" );
+		Location = PoiOntModel.getOntClass(POI_NS + "Location" );
+		
 		poi_revision = PoiOntModel.getDatatypeProperty(POI_NS + "revision");
 		poi_name = PoiOntModel.getDatatypeProperty(POI_NS + "name");
 		poi_tstamp = PoiOntModel.getDatatypeProperty(POI_NS + "tstamp");
@@ -231,7 +254,7 @@ public class Updater_Main {
 					 			 //and add it to tdb2
 					 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
 					 			PoiInstance.addLiteral(poi_id, str_id);
-					 			PoiInstance.addLiteral(poi_language, str_id);
+					 			PoiInstance.addLiteral(poi_language, str_language);
 					 			PoiInstance.addLiteral(poi_revision, str_revision);
 					 			PoiInstance.addLiteral(poi_name, str_name);
 					 			PoiInstance.addLiteral(poi_tstamp, aDate_xsd);
@@ -299,7 +322,7 @@ public class Updater_Main {
 		//***************  getting every available coordinate instance ******************
 		
 		NodeList coordinateList = doc.getElementsByTagName("coordinate");  
-		System.out.println("number of coordinates: "+coordinateList.getLength());
+		//System.out.println("number of coordinates: "+coordinateList.getLength());
 		for (int i = 0; i < coordinateList.getLength(); i++) {
 			Node node = coordinateList.item(i);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -330,7 +353,7 @@ public class Updater_Main {
 			                //System.out.println("individuals literal float value: "+y_value.getFloat());
 			                if (Float.toString(y_value.getFloat()).contains(ye)) {
 			                	existing_resource=true;
-								System.out.println("coordinate resource "+coordinate_x_y+ " just exist");
+								//System.out.println("coordinate resource "+coordinate_x_y+ " just exist");
 								break;
 							} else {
 								existing_resource=false;
@@ -341,7 +364,7 @@ public class Updater_Main {
 	        			 if (! existing_resource) {
 								//System.out.println("no y coordinate");
 								coordinate_x_y = "coordinate_"+equis+"_"+ye;
-								System.out.println("must create object as: "+coordinate_x_y);
+								//System.out.println("must create object as: "+coordinate_x_y);
 								//creating coordinate individual
 								 //and add it to tdb2
 								Individual PoiCoordinate = PoiOntModel.createIndividual( POI_NS +  coordinate_x_y,  Coordinate); 
@@ -351,9 +374,7 @@ public class Updater_Main {
 						}//if resource does not exist
 	        			 
 					} else {
-						System.out.println("no x coordinate");
 						coordinate_x_y = "coordinate_"+equis+"_"+ye;
-						System.out.println("must create object as: "+coordinate_x_y);
 						//must create generic method, individual with n properties
 						//creating coordinate individual
 						 //and add it to tdb2
@@ -362,10 +383,7 @@ public class Updater_Main {
 						PoiCoordinate.addLiteral(poi_ye, Float.parseFloat(ye));
 						PoiCoordinate.addLiteral(poi_coordinateType, coordinateType);
 					}//end if to check existence
-	        		
-	               
-	                
-	                
+	        	
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
@@ -375,8 +393,262 @@ public class Updater_Main {
 			
 		}//end for coordinateList
 		
+		//getting all tags linked to locations
 		
-
+		NodeList districtList = doc.getElementsByTagName("district");  
+		System.out.println("number of districts: "+districtList.getLength());
+		for (int i = 0; i < districtList.getLength(); i++) {
+			Node node = districtList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 		
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList departmentList = doc.getElementsByTagName("department");  
+		System.out.println("number of departments: "+departmentList.getLength());
+		for (int i = 0; i < departmentList.getLength(); i++) {
+			Node node = departmentList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+							
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList regionList = doc.getElementsByTagName("region");  
+		System.out.println("number of regions: "+regionList.getLength());
+		for (int i = 0; i < regionList.getLength(); i++) {
+			Node node = regionList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList classification_excursionsregion_locationList = doc.getElementsByTagName("classification_excursionsregion_location");  
+		System.out.println("number of classification_excursionsregion_locations: "+classification_excursionsregion_locationList.getLength());
+		for (int i = 0; i < classification_excursionsregion_locationList.getLength(); i++) {
+			Node node = classification_excursionsregion_locationList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList classification_aquaticsdistrict_locationList = doc.getElementsByTagName("classification_aquaticsdistrict_location");  
+		System.out.println("number of classification_aquaticsdistrict_locations: "+classification_aquaticsdistrict_locationList.getLength());
+		for (int i = 0; i < classification_aquaticsdistrict_locationList.getLength(); i++) {
+			Node node = classification_aquaticsdistrict_locationList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList stateList = doc.getElementsByTagName("state");  
+		System.out.println("number of states: "+stateList.getLength());
+		for (int i = 0; i < stateList.getLength(); i++) {
+			Node node = stateList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 if ((str_type != null)&& (str_id != null)) {
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
+		
+		NodeList locationList = doc.getElementsByTagName("location");  
+		System.out.println("number of locations: "+locationList.getLength());
+		for (int i = 0; i < locationList.getLength(); i++) {
+			Node node = locationList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) node;  
+				try {
+					 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+					 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+					 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
+					 String str_language = eElement.getAttributes().getNamedItem("language").getNodeValue();
+					 String str_revision = eElement.getAttributes().getNamedItem("revision").getNodeValue();
+					 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
+					 
+					 if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ){
+							System.out.println("str_type: "+str_type);
+							System.out.println("str_id: "+str_id);
+							System.out.println("str_name: "+str_name);
+							System.out.println(" str_language: "+ str_language);
+							System.out.println("str_revision: "+str_revision);
+							System.out.println("str_tstamp: "+str_tstamp);
+							//checking if individual exist
+					 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		if (PoiInstance == null) {
+						 		 //System.out.println("null loop ");
+					 			 //conversion to valid time stamp
+						 		 try {
+						 			 //and add it to tdb2
+						 			PoiInstance = PoiOntModel.createIndividual( POI_NS +  str_id,  Classification); 
+						 			PoiInstance.addLiteral(poi_id, str_id);
+						 			PoiInstance.addLiteral(poi_language, str_language);
+						 			
+								} catch (Exception e) {
+									// TODO: handle exception
+									System.out.println(e.toString());
+								}
+							}//if poi instance 
+					 }
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}//endif node
+		}//end for districList
 		//printing result
 		
 		//defining basic variables
