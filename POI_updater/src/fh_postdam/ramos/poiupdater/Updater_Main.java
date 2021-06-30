@@ -142,7 +142,7 @@ public class Updater_Main {
 	    OntModelSpec spec = new OntModelSpec(OntModelSpec.OWL_MEM);//add as parameter
 	    
 	    
-	    Aquaticsdistrict 
+	    Aquaticsdistrict;
 	     
 	    
 	     /*
