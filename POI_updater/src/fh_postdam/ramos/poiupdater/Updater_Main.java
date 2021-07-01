@@ -704,18 +704,18 @@ public class Updater_Main {
 						 System.out.println("location name: "+str_name);
 						 
 						 NodeList nodedistrict = eElement.getElementsByTagName("district");
-						 System.out.println("node district length: "+nodedistrict.getLength());
+						 NodeList childDistrict = nodedistrict.item(0).getChildNodes();
+						 System.out.println("node child district length: "+childDistrict.getLength());
 						 
 						 //getting all ids of this districts list
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
+						 for (int i_list = 0; i_list < childDistrict.getLength(); i_list++) {
 							 
-								Node this_node = nodedistrict.item(i_list);  
+								Node this_node = childDistrict.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									System.out.println("node is element");
 									Element listElement = (Element) this_node;  
 									try {
-										//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
 								         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 								         System.out.println("str_id_node: "+str_id_node);
 									} catch (Exception e) {
@@ -728,11 +728,12 @@ public class Updater_Main {
 										 
 						 
 						 NodeList nodedepartment = eElement.getElementsByTagName("department");
-						 System.out.println("nodedepartment length: "+nodedepartment.getLength());
+						 NodeList childDepartment = nodedepartment.item(0).getChildNodes();
+						 System.out.println("nodedepartment length: "+childDepartment.getLength());
 						 
 						//getting all ids of this districts list
-						 for (int i_list = 0; i_list < nodedepartment.getLength(); i_list++) {
-								Node this_node = nodedepartment.item(i_list);  
+						 for (int i_list = 0; i_list < childDepartment.getLength(); i_list++) {
+								Node this_node = childDepartment.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
 
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
@@ -750,11 +751,12 @@ public class Updater_Main {
 						 
 						 
 						 NodeList noderegion = eElement.getElementsByTagName("region");
-						 System.out.println("node region length: "+noderegion.getLength());
+						 NodeList childRegion = noderegion.item(0).getChildNodes();
+						 System.out.println("node region length: "+childRegion.getLength());
 						 
 						//getting all ids of this districts list
-						 for (int i_list = 0; i_list < noderegion.getLength(); i_list++) {
-								Node this_node = noderegion.item(i_list);  
+						 for (int i_list = 0; i_list < childRegion.getLength(); i_list++) {
+								Node this_node = childRegion.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
 
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
@@ -769,19 +771,24 @@ public class Updater_Main {
 									}
 								}//endif for every node
 						 }//endfor of the node list
+						 
 						 NodeList nodecoordinates = eElement.getElementsByTagName("coordinates");
 						 System.out.println("nodecoordinates length: "+nodecoordinates.getLength());
+						 NodeList childCoordinates = nodecoordinates.item(0).getChildNodes();
 						 
-						 for (int i_list = 0; i_list < nodecoordinates.getLength(); i_list++) {
-								Node this_node = nodecoordinates.item(i_list);  
-								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+						 for (int i_list = 0; i_list < childCoordinates.getLength(); i_list++) {
+								Node this_node = childCoordinates.item(i_list);  
+								System.out.println("\nCurrent coordinate Element :" + this_node.getNodeName());
+								//getting node list of coordinates node
 
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
-										//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-								         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-								         System.out.println("str_id_nodecoordinates: "+str_id_node);
+										String equis = listElement.getElementsByTagName("x").item(0).getTextContent();
+						                String ye = listElement.getElementsByTagName("y").item(0).getTextContent();
+						                String coordinateType = listElement.getElementsByTagName("type").item(0).getTextContent();
+						                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
+						                System.out.println("must search coordinate as: "+coordinate_x_y);
 									} catch (Exception e) {
 										// TODO: handle exception
 										System.out.println("no str_id_nodecoordinates ");
@@ -790,10 +797,12 @@ public class Updater_Main {
 						 }//endfor of the node list
 						 
 						 NodeList nodeexcursionsRegion = eElement.getElementsByTagName("excursionsRegion");
-						 System.out.println("nodeexcursionsRegion length: "+nodeexcursionsRegion.getLength());
+						 NodeList childExcursionsRegion = nodeexcursionsRegion.item(0).getChildNodes();
+						 System.out.println("childExcursionsRegion length: "+childExcursionsRegion.getLength());
+
 						 
-						 for (int i_list = 0; i_list < nodeexcursionsRegion.getLength(); i_list++) {
-								Node this_node = nodeexcursionsRegion.item(i_list);  
+						 for (int i_list = 0; i_list < childExcursionsRegion.getLength(); i_list++) {
+								Node this_node = childExcursionsRegion.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
 
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
@@ -810,11 +819,12 @@ public class Updater_Main {
 						 }//endfor of the node list
 						 
 						 NodeList nodeaquaticsDistrict = eElement.getElementsByTagName("aquaticsDistrict");
-						 System.out.println("nodeaquaticsDistrict length: "+nodeaquaticsDistrict.getLength());
+						 NodeList childAquaticsDistrict = nodeaquaticsDistrict.item(0).getChildNodes();
+						 System.out.println("childAquaticsDistrict length: "+childAquaticsDistrict.getLength());
 						 
 						 
-						 for (int i_list = 0; i_list < nodeaquaticsDistrict.getLength(); i_list++) {
-								Node this_node = nodeaquaticsDistrict.item(i_list);  
+						 for (int i_list = 0; i_list < childAquaticsDistrict.getLength(); i_list++) {
+								Node this_node = childAquaticsDistrict.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
 
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
@@ -832,7 +842,7 @@ public class Updater_Main {
 						 
 						 Element stateElement = (Element) eElement.getElementsByTagName("state");
 						 //get id of state
-						 String str_id_state = eElement.getAttributes().getNamedItem("id").getNodeValue();
+						 String str_id_state = stateElement.getAttributes().getNamedItem("id").getNodeValue();
 						 
 						 System.out.println("str_id_state: "+str_id_state);
 			             
