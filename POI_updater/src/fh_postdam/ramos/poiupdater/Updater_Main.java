@@ -685,6 +685,9 @@ public class Updater_Main {
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			NodeList locationList = doc.getElementsByTagName("location");  
 			System.out.println("number of locations: "+locationList.getLength());
+			
+			//getting name of every location
+			
 			for (int i = 0; i < locationList.getLength(); i++) {
 				Node node = locationList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -701,14 +704,13 @@ public class Updater_Main {
 						 System.out.println("location name: "+str_name);
 						 
 						 NodeList nodedistrict = eElement.getElementsByTagName("district");
-						 System.out.println("nodedistrict: "+nodedistrict.getLength());
+						 System.out.println("node district length: "+nodedistrict.getLength());
 						 
 						 //getting all ids of this districts list
 						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
+							 
 								Node this_node = nodedistrict.item(i_list);  
 								System.out.println("\nCurrent Element :" + this_node.getNodeName());
-								
-						        
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									System.out.println("node is element");
 									Element listElement = (Element) this_node;  
@@ -718,17 +720,21 @@ public class Updater_Main {
 								         System.out.println("str_id_node: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_node: ");
 									}
 								}//endif for every node
+							
 						 }//endfor of the node list
 										 
 						 
 						 NodeList nodedepartment = eElement.getElementsByTagName("department");
-						 System.out.println("nodedepartment: "+nodedepartment.getLength());
+						 System.out.println("nodedepartment length: "+nodedepartment.getLength());
 						 
 						//getting all ids of this districts list
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
-								Node this_node = nodedistrict.item(i_list);  
+						 for (int i_list = 0; i_list < nodedepartment.getLength(); i_list++) {
+								Node this_node = nodedepartment.item(i_list);  
+								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
@@ -737,17 +743,20 @@ public class Updater_Main {
 								         System.out.println("str_id_nodedepartment: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_nodedepartment ");
 									}
 								}//endif for every node
 						 }//endfor of the node list
 						 
 						 
 						 NodeList noderegion = eElement.getElementsByTagName("region");
-						 System.out.println("noderegion: "+noderegion.getLength());
+						 System.out.println("node region length: "+noderegion.getLength());
 						 
 						//getting all ids of this districts list
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
-								Node this_node = nodedistrict.item(i_list);  
+						 for (int i_list = 0; i_list < noderegion.getLength(); i_list++) {
+								Node this_node = noderegion.item(i_list);  
+								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
@@ -756,14 +765,17 @@ public class Updater_Main {
 								         System.out.println("str_id_noderegion: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_noderegion ");
 									}
 								}//endif for every node
 						 }//endfor of the node list
 						 NodeList nodecoordinates = eElement.getElementsByTagName("coordinates");
-						 System.out.println("nodecoordinates: "+nodecoordinates.getLength());
+						 System.out.println("nodecoordinates length: "+nodecoordinates.getLength());
 						 
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
-								Node this_node = nodedistrict.item(i_list);  
+						 for (int i_list = 0; i_list < nodecoordinates.getLength(); i_list++) {
+								Node this_node = nodecoordinates.item(i_list);  
+								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
@@ -772,15 +784,18 @@ public class Updater_Main {
 								         System.out.println("str_id_nodecoordinates: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_nodecoordinates ");
 									}
 								}//endif for every node
 						 }//endfor of the node list
 						 
 						 NodeList nodeexcursionsRegion = eElement.getElementsByTagName("excursionsRegion");
-						 System.out.println("nodeexcursionsRegion: "+nodeexcursionsRegion.getLength());
+						 System.out.println("nodeexcursionsRegion length: "+nodeexcursionsRegion.getLength());
 						 
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
-								Node this_node = nodedistrict.item(i_list);  
+						 for (int i_list = 0; i_list < nodeexcursionsRegion.getLength(); i_list++) {
+								Node this_node = nodeexcursionsRegion.item(i_list);  
+								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
@@ -789,16 +804,19 @@ public class Updater_Main {
 								         System.out.println("str_id_nodeexcursionsRegion: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_nodeexcursionsRegion: ");
 									}
 								}//endif for every node
 						 }//endfor of the node list
 						 
 						 NodeList nodeaquaticsDistrict = eElement.getElementsByTagName("aquaticsDistrict");
-						 System.out.println("nodeaquaticsDistrict: "+nodeaquaticsDistrict.getLength());
+						 System.out.println("nodeaquaticsDistrict length: "+nodeaquaticsDistrict.getLength());
 						 
 						 
-						 for (int i_list = 0; i_list < nodedistrict.getLength(); i_list++) {
-								Node this_node = nodedistrict.item(i_list);  
+						 for (int i_list = 0; i_list < nodeaquaticsDistrict.getLength(); i_list++) {
+								Node this_node = nodeaquaticsDistrict.item(i_list);  
+								System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
 								if (this_node.getNodeType() == Node.ELEMENT_NODE) {
 									Element listElement = (Element) this_node;  
 									try {
@@ -807,6 +825,7 @@ public class Updater_Main {
 								         System.out.println("str_id_nodeaquaticsDistrict: "+str_id_node);
 									} catch (Exception e) {
 										// TODO: handle exception
+										System.out.println("no str_id_nodeaquaticsDistrict: ");
 									}
 								}//endif for every node
 						 }//endfor of the node list
