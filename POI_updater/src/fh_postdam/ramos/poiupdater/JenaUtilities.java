@@ -158,7 +158,6 @@ public class JenaUtilities {
 				 		//we add quotation marks and a second option 
 				 }
 		      }
-			 //GLEIF1_items.close();
 		return PoiInstance;
 	}//ends getIndividualbyID
 
