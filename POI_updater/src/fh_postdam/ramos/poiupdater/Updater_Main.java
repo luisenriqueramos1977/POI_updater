@@ -702,9 +702,10 @@ public class Updater_Main {
 						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
 						 //getting list of node for every tag
 						 
-						 
-						 
 						 System.out.println("location name: "+str_name);
+						 
+						 
+						 //checking if location exist in kb
 						 
 						 //we surrounded district getting with try catch to avoid null exception
 						 
