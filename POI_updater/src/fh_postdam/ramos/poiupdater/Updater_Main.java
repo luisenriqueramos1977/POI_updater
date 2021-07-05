@@ -685,7 +685,7 @@ public class Updater_Main {
 		
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			NodeList locationList = doc.getElementsByTagName("location");  
-			System.out.println("number of locations: "+locationList.getLength());
+			//System.out.println("number of locations: "+locationList.getLength());
 			
 			//getting name of every location
 			
