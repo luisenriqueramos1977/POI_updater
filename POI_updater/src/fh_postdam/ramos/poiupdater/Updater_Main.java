@@ -701,18 +701,18 @@ public class Updater_Main {
 						 String str_revision = eElement.getAttributes().getNamedItem("revision").getNodeValue();
 						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
 						 //getting list of node for every tag
-						 
 						 System.out.println("location name: "+str_name);
-						 
-						 
+						
 						 //checking if location exist in kb
+						 
+						 
 						 
 						 //we surrounded district getting with try catch to avoid null exception
 						 
 						 try {
 							 NodeList nodedistrict = eElement.getElementsByTagName("district");
 							 NodeList childDistrict = nodedistrict.item(0).getChildNodes();
-							 System.out.println("node child district length: "+childDistrict.getLength());
+							 //System.out.println("node child district length: "+childDistrict.getLength());
 							 //getting all ids of this districts list
 							 for (int i_list = 0; i_list < childDistrict.getLength(); i_list++) {
 								 
