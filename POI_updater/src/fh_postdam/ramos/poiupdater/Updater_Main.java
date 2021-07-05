@@ -78,6 +78,19 @@ public class Updater_Main {
 	public static DatatypeProperty poi_coordinateType;
 	
 	public static ObjectProperty poi_parents;
+	public static ObjectProperty address;
+	public static ObjectProperty allowedController;
+	public static ObjectProperty category;
+	public static ObjectProperty classification_category_poi;
+	public static ObjectProperty connection;
+	public static ObjectProperty connectionType;
+	public static ObjectProperty controller;
+	public static ObjectProperty coordinates;
+	public static ObjectProperty department;
+	public static ObjectProperty district;
+	public static ObjectProperty location;
+	public static ObjectProperty openinghours;
+	public static ObjectProperty weekday;
 	//rdf standard properties
 	public static Property rdf_ns_type;
 
@@ -194,6 +207,22 @@ public class Updater_Main {
 		poi_ye = PoiOntModel.getDatatypeProperty(POI_NS + "y_type");
 		poi_coordinateType = PoiOntModel.getDatatypeProperty(POI_NS + "coordinateType");
 		
+		//getting object properties
+		
+		address= PoiOntModel.getObjectProperty(POI_NS + "address");
+		allowedController = PoiOntModel.getObjectProperty(POI_NS + "allowedController");
+		category = PoiOntModel.getObjectProperty(POI_NS + "category");
+		classification_category_poi = PoiOntModel.getObjectProperty(POI_NS + "classification_category_poi");
+		connection= PoiOntModel.getObjectProperty(POI_NS + "connection");
+		connectionType= PoiOntModel.getObjectProperty(POI_NS + "connectionType");
+		controller= PoiOntModel.getObjectProperty(POI_NS + "controller");
+		coordinates= PoiOntModel.getObjectProperty(POI_NS + "coordinates");
+		department= PoiOntModel.getObjectProperty(POI_NS + "department");
+		district= PoiOntModel.getObjectProperty(POI_NS + "district");
+		location= PoiOntModel.getObjectProperty(POI_NS + "location");
+		openinghours= PoiOntModel.getObjectProperty(POI_NS + "openinghours");
+		weekday= PoiOntModel.getObjectProperty(POI_NS + "weekday");
+		
 		rdf_ns_type = PoiOntModel.getProperty(rdf_ns + "type");
 		
 		System.out.println(Classification);
@@ -207,6 +236,19 @@ public class Updater_Main {
 		System.out.println(poi_ye);
 		System.out.println(poi_coordinateType);
 		System.out.println(rdf_ns_type);
+		System.out.println(address);
+		System.out.println(allowedController);
+		System.out.println(category);
+		System.out.println(classification_category_poi);
+		System.out.println(connection);
+		System.out.println(connectionType);
+		System.out.println(controller);
+		System.out.println(coordinates);
+		System.out.println(department);
+		System.out.println(district);
+		System.out.println(location);
+		System.out.println(openinghours);
+		System.out.println(weekday);
 
 
 		/*
@@ -684,6 +726,7 @@ public class Updater_Main {
 		aResponse = input.nextLine();    //ans wer for first general loop
 		
 		if (aResponse.equalsIgnoreCase("Yes")) {
+			
 			NodeList locationList = doc.getElementsByTagName("location");  
 			//System.out.println("number of locations: "+locationList.getLength());
 			
@@ -696,256 +739,247 @@ public class Updater_Main {
 					try {
 						 String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
 						 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
-						 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
 						 String str_language = eElement.getAttributes().getNamedItem("language").getNodeValue();
 						 String str_revision = eElement.getAttributes().getNamedItem("revision").getNodeValue();
+						 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
 						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
 						 //getting list of node for every tag
 						 System.out.println("location name: "+str_name);
 						
 						 //checking if location exist in kb
 						 
+						 Individual aLocation = PoiOntModel.getIndividual(POI_NS + str_id );
 						 
-						 
-						 //we surrounded district getting with try catch to avoid null exception
-						 
-						 try {
-							 NodeList nodedistrict = eElement.getElementsByTagName("district");
-							 NodeList childDistrict = nodedistrict.item(0).getChildNodes();
-							 //System.out.println("node child district length: "+childDistrict.getLength());
-							 //getting all ids of this districts list
-							 for (int i_list = 0; i_list < childDistrict.getLength(); i_list++) {
+						 if ((aLocation == null) && (str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null)) {
+							 //if no location and all attributes are present, we fill out the objekt
+							//doing tstamp to xsd format exchange
+					 		XSDDateTime aDate_xsd = null;
+					 		aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
+							 //creating individual and adding attributes
+							 Individual PoiLocation = PoiOntModel.createIndividual( POI_NS +  str_id,  Location);
+					 		 PoiLocation.addLiteral(poi_id, str_id);
+					 		 PoiLocation.addLiteral(poi_language, str_language);
+					 		 PoiLocation.addLiteral(poi_revision, str_revision);
+					 		 PoiLocation.addLiteral(poi_name, str_name);
+					 		 PoiLocation.addLiteral(poi_tstamp, aDate_xsd);
+							 
+							 //we surrounded district getting with try catch to avoid null exception
+							 try {
+								 NodeList nodedistrict = eElement.getElementsByTagName("district");
+								 NodeList childDistrict = nodedistrict.item(0).getChildNodes();
+								 //System.out.println("node child district length: "+childDistrict.getLength());
+								 //getting all ids of this districts list
+								 for (int i_list = 0; i_list < childDistrict.getLength(); i_list++) {
+										Node this_node = childDistrict.item(i_list);  
+										System.out.println("\nCurrent Element :" + this_node.getNodeName());
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											System.out.println("node is element");
+											Element listElement = (Element) this_node;  
+											try {
+										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
+										         System.out.println("str_id_node: "+str_id_node);
+										       //searching for department individual in ontmodel
+											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											    System.out.println("instance district: "+PoiInstance.toString());
+											} catch (Exception e) {
+												// TODO: handle exception
+												System.out.println("no str_id_node: ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
+								} catch (Exception e) {
+										System.out.println("no district information available");
+								}//end try catch district
+							//try catch for department
+							 try {
+								 NodeList nodedepartment = eElement.getElementsByTagName("department");
+								 NodeList childDepartment = nodedepartment.item(0).getChildNodes();
+								 System.out.println("nodedepartment length: "+childDepartment.getLength());
 								 
-									Node this_node = childDistrict.item(i_list);  
-									System.out.println("\nCurrent Element :" + this_node.getNodeName());
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										System.out.println("node is element");
-										Element listElement = (Element) this_node;  
-										try {
-									         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-									         System.out.println("str_id_node: "+str_id_node);
-									         
-										} catch (Exception e) {
-											// TODO: handle exception
-											System.out.println("no str_id_node: ");
-										}
-									}//endif for every node
+								//getting all ids of this districts list
+								 for (int i_list = 0; i_list < childDepartment.getLength(); i_list++) {
+										Node this_node = childDepartment.item(i_list);  
+										System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											Element listElement = (Element) this_node;  
+											try {
+												//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
+										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
+										         System.out.println("str_id_nodedepartment: "+str_id_node);
+										         //searching for department individual in ontmodel
+											 		Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											        System.out.println("instance department: "+PoiInstance.toString());
+
+											} catch (Exception e) {
+												// TODO: handle exception
+												System.out.println("error adding department ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no department information available");
+							}//ends try catch for nodelist ifnormation
+
+							 try {
+								 NodeList noderegion = eElement.getElementsByTagName("region");
+								 NodeList childRegion = noderegion.item(0).getChildNodes();
+								 System.out.println("node region length: "+childRegion.getLength());
+								 
+								//getting all ids of this districts list
+								 for (int i_list = 0; i_list < childRegion.getLength(); i_list++) {
+										Node this_node = childRegion.item(i_list);  
+										System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											Element listElement = (Element) this_node;  
+											try {
+												//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
+										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
+										         System.out.println("str_id_noderegion: "+str_id_node);
+											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											     System.out.println("instance region: "+PoiInstance.toString());
+											} catch (Exception e) {
+												// TODO: handle exception
+												//add error to log
+												System.out.println("error while searching instance region ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no region information available");
+							}//ends try catch for region
+							 	
+							 try {
+								 NodeList nodecoordinates = eElement.getElementsByTagName("coordinates");
+								 System.out.println("nodecoordinates length: "+nodecoordinates.getLength());
+								 NodeList childCoordinates = nodecoordinates.item(0).getChildNodes();
+								 
+								 for (int i_list = 0; i_list < childCoordinates.getLength(); i_list++) {
+										Node this_node = childCoordinates.item(i_list);  
+										System.out.println("\nCurrent coordinate Element :" + this_node.getNodeName());
+										//getting node list of coordinates node
+
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											Element listElement = (Element) this_node;  
+											try {
+												String equis = listElement.getElementsByTagName("x").item(0).getTextContent();
+								                String ye = listElement.getElementsByTagName("y").item(0).getTextContent();
+								                String coordinateType = listElement.getElementsByTagName("type").item(0).getTextContent();
+								                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
+								                System.out.println("must search coordinate as: "+coordinate_x_y);
+								                Individual PoiInstance = PoiOntModel.getIndividual(POI_NS+coordinate_x_y);
+										        System.out.println("instance Coordinate: "+PoiInstance.toString());
+										        
+											} catch (Exception e) {
+												// TODO: handle exception
+												System.out.println("no str_id_nodecoordinates ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
+
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no coordinates information available");
+							}//end try catch for coordinates
+							 						 
+							 try {
+								 NodeList nodeexcursionsRegion = eElement.getElementsByTagName("excursionsRegion");
+								 NodeList childExcursionsRegion = nodeexcursionsRegion.item(0).getChildNodes();
+								 System.out.println("node childExcursionsRegion length: "+childExcursionsRegion.getLength());
+								 for (int i_list = 0; i_list < childExcursionsRegion.getLength(); i_list++) {
+										Node this_node = childExcursionsRegion.item(i_list);  
+										System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											Element listElement = (Element) this_node;  
+											try {
+												//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
+										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
+										         System.out.println("str_id_nodeexcursionsRegion: "+str_id_node);
+											     Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											     System.out.println("instance excursionsRegion: "+PoiInstance.toString());
+											} catch (Exception e) {
+												// TODO: handle exception
+												System.out.println("error while searching instance excursionsRegion: ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
+								 
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no excursionsRegion information available");
+							}//end try catch excursion
+							 
+							 try {
+								 
+								 NodeList nodeaquaticsDistrict = eElement.getElementsByTagName("aquaticsDistrict");
+								 NodeList childAquaticsDistrict = nodeaquaticsDistrict.item(0).getChildNodes();
+								 System.out.println("childAquaticsDistrict length: "+childAquaticsDistrict.getLength());
+								 for (int i_list = 0; i_list < childAquaticsDistrict.getLength(); i_list++) {
+										Node this_node = childAquaticsDistrict.item(i_list);  
+										System.out.println("\nCurrent Element :" + this_node.getNodeName());
+
+										if (this_node.getNodeType() == Node.ELEMENT_NODE) {
+											Element listElement = (Element) this_node;  
+											try {
+												//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
+										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
+										         System.out.println("str_id_nodeaquaticsDistrict: "+str_id_node);
+											 	 Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											     System.out.println("instance aquaticsDistrict: "+PoiInstance.toString());
+											} catch (Exception e) {
+												// TODO: handle exception
+												System.out.println("no aquaticsDistrict instance: ");
+											}
+										}//endif for every node
+								 }//endfor of the node list
 								
-							 }//endfor of the node list
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no aquaticsDistrict information available");
+							}//ends try catch aquaticdistrict
+							 						 
+							 try {
+								 NodeList stateNode = eElement.getElementsByTagName("state");
+								 String str_id_state = stateNode.item(0).getAttributes().getNamedItem("id").getNodeValue();
+								 System.out.println("str_id_state length: "+str_id_state);
+							 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_state );
+							     System.out.println("instance state: "+PoiInstance.toString());
+							     
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no state instance available");
+							}//ends try catch 
 							
-						} catch (Exception e) {
-							System.out.println("no district information available");
-						}//end try catch district
-						 
-						 				 
-						 
-						 //try catch for department
-						 
-						 try {
-							 NodeList nodedepartment = eElement.getElementsByTagName("department");
-							 NodeList childDepartment = nodedepartment.item(0).getChildNodes();
-							 System.out.println("nodedepartment length: "+childDepartment.getLength());
+							//trying two option aliases
 							 
-							//getting all ids of this districts list
-							 for (int i_list = 0; i_list < childDepartment.getLength(); i_list++) {
-									Node this_node = childDepartment.item(i_list);  
-									System.out.println("\nCurrent Element :" + this_node.getNodeName());
+							 try {
+								 NodeList aliasNodes = eElement.getElementsByTagName("alias");
+								 Node aliasNode = aliasNodes.item(0);
+								 Element aliasElement = (Element) aliasNode;
+								 System.out.println("str_alias: "+aliasElement.getTextContent());
+								 //add alias property value
+								 
+							} catch (Exception e) {
+								// TODO: handle exception
+								System.out.println("no alias information available");
 
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										Element listElement = (Element) this_node;  
-										try {
-											//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-									         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-									         System.out.println("str_id_nodedepartment: "+str_id_node);
-									         //searching for department individual in ontmodel
-										 		Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id_node);
-										        System.out.println("instance department: "+PoiInstance.toString());
-
-										} catch (Exception e) {
-											// TODO: handle exception
-											System.out.println("error adding department ");
-										}
-									}//endif for every node
-							 }//endfor of the node list
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no department information available");
-						}//ends try catch for nodelist ifnormation
-						 						 
-						 
-						 try {
-							 NodeList noderegion = eElement.getElementsByTagName("region");
-							 NodeList childRegion = noderegion.item(0).getChildNodes();
-							 System.out.println("node region length: "+childRegion.getLength());
+							}//end try catch alias
 							 
-							//getting all ids of this districts list
-							 for (int i_list = 0; i_list < childRegion.getLength(); i_list++) {
-									Node this_node = childRegion.item(i_list);  
-									System.out.println("\nCurrent Element :" + this_node.getNodeName());
-
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										Element listElement = (Element) this_node;  
-										try {
-											//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-									         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-									         System.out.println("str_id_noderegion: "+str_id_node);
-									         Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id_node);
-										     System.out.println("instance region: "+PoiInstance.toString());
-										} catch (Exception e) {
-											// TODO: handle exception
-											//add error to log
-											System.out.println("error while searching instance region ");
-										}
-									}//endif for every node
-							 }//endfor of the node list
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no region information available");
-						}//ends try catch for region
-						 						 
-						 try {
-							 NodeList nodecoordinates = eElement.getElementsByTagName("coordinates");
-							 System.out.println("nodecoordinates length: "+nodecoordinates.getLength());
-							 NodeList childCoordinates = nodecoordinates.item(0).getChildNodes();
-							 
-							 for (int i_list = 0; i_list < childCoordinates.getLength(); i_list++) {
-									Node this_node = childCoordinates.item(i_list);  
-									System.out.println("\nCurrent coordinate Element :" + this_node.getNodeName());
-									//getting node list of coordinates node
-
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										Element listElement = (Element) this_node;  
-										try {
-											String equis = listElement.getElementsByTagName("x").item(0).getTextContent();
-							                String ye = listElement.getElementsByTagName("y").item(0).getTextContent();
-							                String coordinateType = listElement.getElementsByTagName("type").item(0).getTextContent();
-							                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
-							                System.out.println("must search coordinate as: "+coordinate_x_y);
-							                Individual PoiInstance = PoiOntModel.getIndividual(POI_NS+coordinate_x_y);
-									        System.out.println("instance Coordinate: "+PoiInstance.toString());
-									        
-										} catch (Exception e) {
-											// TODO: handle exception
-											System.out.println("no str_id_nodecoordinates ");
-										}
-									}//endif for every node
-							 }//endfor of the node list
-
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no coordinates information available");
-						}//end try catch for coordinates
-						 						 
-						 try {
-							 NodeList nodeexcursionsRegion = eElement.getElementsByTagName("excursionsRegion");
-							 NodeList childExcursionsRegion = nodeexcursionsRegion.item(0).getChildNodes();
-							 System.out.println("node childExcursionsRegion length: "+childExcursionsRegion.getLength());
-							 for (int i_list = 0; i_list < childExcursionsRegion.getLength(); i_list++) {
-									Node this_node = childExcursionsRegion.item(i_list);  
-									System.out.println("\nCurrent Element :" + this_node.getNodeName());
-
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										Element listElement = (Element) this_node;  
-										try {
-											//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-									         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-									         System.out.println("str_id_nodeexcursionsRegion: "+str_id_node);
-									         Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id_node);
-										     System.out.println("instance excursionsRegion: "+PoiInstance.toString());
-										} catch (Exception e) {
-											// TODO: handle exception
-											System.out.println("error while searching instance excursionsRegion: ");
-										}
-									}//endif for every node
-							 }//endfor of the node list
-							 
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no excursionsRegion information available");
-						}//end try catch excursion
-						 
-						 try {
-							 
-							 NodeList nodeaquaticsDistrict = eElement.getElementsByTagName("aquaticsDistrict");
-							 NodeList childAquaticsDistrict = nodeaquaticsDistrict.item(0).getChildNodes();
-							 System.out.println("childAquaticsDistrict length: "+childAquaticsDistrict.getLength());
-							 for (int i_list = 0; i_list < childAquaticsDistrict.getLength(); i_list++) {
-									Node this_node = childAquaticsDistrict.item(i_list);  
-									System.out.println("\nCurrent Element :" + this_node.getNodeName());
-
-									if (this_node.getNodeType() == Node.ELEMENT_NODE) {
-										Element listElement = (Element) this_node;  
-										try {
-											//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
-									         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
-									         System.out.println("str_id_nodeaquaticsDistrict: "+str_id_node);
-									         Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id_node);
-										     System.out.println("instance aquaticsDistrict: "+PoiInstance.toString());
-										} catch (Exception e) {
-											// TODO: handle exception
-											System.out.println("no aquaticsDistrict instance: ");
-										}
-									}//endif for every node
-							 }//endfor of the node list
-							
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no aquaticsDistrict information available");
-						}//ends try catch aquaticdistrict
-						 						 
-						 try {
-							 NodeList stateNode = eElement.getElementsByTagName("state");
-							 String str_id_state = stateNode.item(0).getAttributes().getNamedItem("id").getNodeValue();
-							 System.out.println("str_id_state length: "+str_id_state);
-							 Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id_state);
-						     System.out.println("instance state: "+PoiInstance.toString());
-						     
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no state instance available");
-						}//ends try catch 
-						 
-						 
-						 //trying two option aliases
-						 
-						 try {
-							 NodeList aliasNodes = eElement.getElementsByTagName("alias");
-							 Node aliasNode = aliasNodes.item(0);
-							 Element aliasElement = (Element) aliasNode;
-							 System.out.println("str_alias: "+aliasElement.getTextContent());
-							 //add alias property value
-							 
-						} catch (Exception e) {
-							// TODO: handle exception
-							System.out.println("no alias information available");
-
-						}//end try catch alias
-						 
-						 
-						 if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ){
-								
-								//checking if individual exist
-						 		Individual PoiLocation = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
-						 		if (PoiLocation == null) {
-							 		 System.out.println("no location ");
-							 		 //reading all attributes
-							 		 
-							 		 //getting every related object
-							 		 
-							 		 
-							 		 
-						 			
-								}//if poi instance 
-						 }
-						 else {
-					 			System.out.println("exist object "+str_id+ " type "+str_type);
-					 		}
+						} else {
+							System.out.println("exist object "+str_id+ " type "+str_type);
+						}//endif aLocation exist	 
 					} catch (Exception e) {
 						// TODO: handle exception
-					}
-				}//endif node
-			}//end for districList
-		}//endif 
+					}//try for Location
+				}//endif Location
+			}//endfor?
+		}//endif for update Location
+		
+		
 		
 		System.out.println("Do you want to update rdf file? ");
 		
