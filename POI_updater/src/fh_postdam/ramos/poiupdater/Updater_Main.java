@@ -747,7 +747,6 @@ public class Updater_Main {
 						 System.out.println("location name: "+str_name);
 						
 						 //checking if location exist in kb
-						 
 						 Individual aLocation = PoiOntModel.getIndividual(POI_NS + str_id );
 						 
 						 if ((aLocation == null) && (str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null)) {
