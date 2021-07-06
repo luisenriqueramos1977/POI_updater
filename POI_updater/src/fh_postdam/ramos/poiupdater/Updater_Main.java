@@ -68,6 +68,7 @@ public class Updater_Main {
 	
 	
 	//poi properties
+	private static DatatypeProperty poi_location_alias;
 	private static DatatypeProperty poi_revision;
 	public static DatatypeProperty  poi_name;
 	public static DatatypeProperty poi_tstamp;
@@ -184,6 +185,17 @@ public class Updater_Main {
 				Aquaticsdistrict = PoiOntModel.createClass( POI_NS + "Aquaticsdistrict" );
 			}
 		 
+
+			try {
+				poi_location_alias = PoiOntModel.getDatatypeProperty(POI_NS + "alias");
+				if (poi_location_alias==null) {
+					poi_location_alias = PoiOntModel.createDatatypeProperty(POI_NS + "alias");
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				System.out.println("poi_location_alias not created");
+			}
+		 
 		 
 		
 		//getting every model classes and properties
@@ -206,6 +218,9 @@ public class Updater_Main {
 		poi_equis = PoiOntModel.getDatatypeProperty(POI_NS + "x_type");
 		poi_ye = PoiOntModel.getDatatypeProperty(POI_NS + "y_type");
 		poi_coordinateType = PoiOntModel.getDatatypeProperty(POI_NS + "coordinateType");
+		
+		//searching for alias, or creating it
+		
 		
 		//getting object properties
 		
@@ -249,6 +264,7 @@ public class Updater_Main {
 		System.out.println(location);
 		System.out.println(openinghours);
 		System.out.println(weekday);
+		System.out.println(poi_location_alias);
 
 
 		/*
@@ -779,6 +795,7 @@ public class Updater_Main {
 										         System.out.println("str_id_node: "+str_id_node);
 										       //searching for department individual in ontmodel
 											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											 	PoiInstance.addLiteral(district, PoiLocation);
 											    System.out.println("instance district: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -808,6 +825,7 @@ public class Updater_Main {
 										         System.out.println("str_id_nodedepartment: "+str_id_node);
 										         //searching for department individual in ontmodel
 											 		Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											 		PoiInstance.addLiteral(district, PoiLocation);
 											        System.out.println("instance department: "+PoiInstance.toString());
 
 											} catch (Exception e) {
@@ -838,6 +856,7 @@ public class Updater_Main {
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_noderegion: "+str_id_node);
 											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											 	PoiInstance.addLiteral(district, PoiLocation);
 											     System.out.println("instance region: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -868,8 +887,9 @@ public class Updater_Main {
 								                String ye = listElement.getElementsByTagName("y").item(0).getTextContent();
 								                String coordinateType = listElement.getElementsByTagName("type").item(0).getTextContent();
 								                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
-								                System.out.println("must search coordinate as: "+coordinate_x_y);
+								                //System.out.println("must search coordinate as: "+coordinate_x_y);
 								                Individual PoiInstance = PoiOntModel.getIndividual(POI_NS+coordinate_x_y);
+								                PoiInstance.addLiteral(district, PoiLocation);
 										        System.out.println("instance Coordinate: "+PoiInstance.toString());
 										        
 											} catch (Exception e) {
@@ -899,6 +919,7 @@ public class Updater_Main {
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_nodeexcursionsRegion: "+str_id_node);
 											     Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+									             PoiInstance.addLiteral(district, PoiLocation);
 											     System.out.println("instance excursionsRegion: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -928,6 +949,7 @@ public class Updater_Main {
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_nodeaquaticsDistrict: "+str_id_node);
 											 	 Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+									             PoiInstance.addLiteral(district, PoiLocation);
 											     System.out.println("instance aquaticsDistrict: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -946,6 +968,7 @@ public class Updater_Main {
 								 String str_id_state = stateNode.item(0).getAttributes().getNamedItem("id").getNodeValue();
 								 System.out.println("str_id_state length: "+str_id_state);
 							 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_state );
+				                PoiInstance.addLiteral(district, PoiLocation);
 							     System.out.println("instance state: "+PoiInstance.toString());
 							     
 							} catch (Exception e) {
@@ -960,6 +983,7 @@ public class Updater_Main {
 								 Node aliasNode = aliasNodes.item(0);
 								 Element aliasElement = (Element) aliasNode;
 								 System.out.println("str_alias: "+aliasElement.getTextContent());
+					             PoiLocation.addProperty(poi_location_alias, aliasElement.getTextContent());
 								 //add alias property value
 								 
 							} catch (Exception e) {
