@@ -18,12 +18,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryIteratorException;
 import java.security.spec.DSAGenParameterSpec;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
 
@@ -92,12 +94,17 @@ public class Updater_Main {
 	public static ObjectProperty location;
 	public static ObjectProperty openinghours;
 	public static ObjectProperty weekday;
+	public static ObjectProperty classification_excursionsregion_location;
+	public static ObjectProperty classification_aquaticsdistrict_location;
+	public static ObjectProperty poi_region;
+	public static ObjectProperty poi_state;
+
+	
+	
+	
+	
 	//rdf standard properties
 	public static Property rdf_ns_type;
-
-	
-	
-
 	
 	/*
 	 * main variables of the system
@@ -179,10 +186,12 @@ public class Updater_Main {
 		
 		 try {
 			    Aquaticsdistrict = PoiOntModel.getOntClass(POI_NS + "Aquaticsdistrict" );
+			    Excursionsregion = PoiOntModel.getOntClass(POI_NS + "Excursionsregion" );
 		    	
 			} catch (Exception e) {
 				// TODO: handle exception
 				Aquaticsdistrict = PoiOntModel.createClass( POI_NS + "Aquaticsdistrict" );
+				Excursionsregion = PoiOntModel.createClass( POI_NS + "Excursionsregion" );
 			}
 		 
 
@@ -191,6 +200,29 @@ public class Updater_Main {
 				if (poi_location_alias==null) {
 					poi_location_alias = PoiOntModel.createDatatypeProperty(POI_NS + "alias");
 				}
+				
+				classification_excursionsregion_location = PoiOntModel.getObjectProperty(POI_NS + "classification_excursionsregion_location");
+				if (classification_excursionsregion_location==null) {
+					classification_excursionsregion_location = PoiOntModel.createObjectProperty(POI_NS + "classification_excursionsregion_location");
+				}
+				
+				classification_aquaticsdistrict_location= PoiOntModel.getObjectProperty(POI_NS + "classification_aquaticsdistrict_location");
+				if (classification_aquaticsdistrict_location==null) {
+					classification_aquaticsdistrict_location = PoiOntModel.createObjectProperty(POI_NS + "classification_aquaticsdistrict_location");
+				}
+				
+				poi_region = PoiOntModel.getObjectProperty(POI_NS + "region");
+				if (poi_region==null) {
+					poi_region = PoiOntModel.createObjectProperty(POI_NS + "region");
+				}
+				
+			
+				poi_state = PoiOntModel.getObjectProperty(POI_NS + "state");
+				if (poi_state==null) {
+					poi_state = PoiOntModel.createObjectProperty(POI_NS + "state");
+				}
+				
+				
 			} catch (Exception e) {
 				// TODO: handle exception
 				System.out.println("poi_location_alias not created");
@@ -241,6 +273,8 @@ public class Updater_Main {
 		rdf_ns_type = PoiOntModel.getProperty(rdf_ns + "type");
 		
 		System.out.println(Classification);
+		System.out.println(Aquaticsdistrict);
+		System.out.println(Excursionsregion);
 		System.out.println(Coordinate);
 		System.out.println(poi_revision);
 		System.out.println(poi_name);
@@ -265,6 +299,11 @@ public class Updater_Main {
 		System.out.println(openinghours);
 		System.out.println(weekday);
 		System.out.println(poi_location_alias);
+		System.out.println(classification_excursionsregion_location);
+		System.out.println(classification_aquaticsdistrict_location);
+		System.out.println(poi_region);
+		System.out.println(poi_state);
+	
 
 
 		/*
@@ -738,11 +777,8 @@ public class Updater_Main {
 		
 				
 		System.out.println("Do you want to update location? ");
-		
 		aResponse = input.nextLine();    //ans wer for first general loop
-		
 		if (aResponse.equalsIgnoreCase("Yes")) {
-			
 			NodeList locationList = doc.getElementsByTagName("location");  
 			//System.out.println("number of locations: "+locationList.getLength());
 			
@@ -795,7 +831,7 @@ public class Updater_Main {
 										         System.out.println("str_id_node: "+str_id_node);
 										       //searching for department individual in ontmodel
 											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-											 	PoiInstance.addLiteral(district, PoiLocation);
+											 	PoiLocation.addLiteral(district, PoiInstance);
 											    System.out.println("instance district: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -825,7 +861,7 @@ public class Updater_Main {
 										         System.out.println("str_id_nodedepartment: "+str_id_node);
 										         //searching for department individual in ontmodel
 											 		Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-											 		PoiInstance.addLiteral(district, PoiLocation);
+											 		PoiLocation.addLiteral(department, PoiInstance);
 											        System.out.println("instance department: "+PoiInstance.toString());
 
 											} catch (Exception e) {
@@ -855,8 +891,8 @@ public class Updater_Main {
 												//System.out.println("classification id: "+eElement.getAttributes().getNamedItem("id").getNodeValue());
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_noderegion: "+str_id_node);
-											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-											 	PoiInstance.addLiteral(district, PoiLocation);
+											 	 Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
+											 	 PoiLocation.addLiteral(poi_region, PoiInstance);
 											     System.out.println("instance region: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -889,7 +925,7 @@ public class Updater_Main {
 								                String coordinate_x_y = "coordinate_"+equis+"_"+ye;
 								                //System.out.println("must search coordinate as: "+coordinate_x_y);
 								                Individual PoiInstance = PoiOntModel.getIndividual(POI_NS+coordinate_x_y);
-								                PoiInstance.addLiteral(district, PoiLocation);
+								                PoiLocation.addLiteral(coordinates, PoiInstance);
 										        System.out.println("instance Coordinate: "+PoiInstance.toString());
 										        
 											} catch (Exception e) {
@@ -919,7 +955,7 @@ public class Updater_Main {
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_nodeexcursionsRegion: "+str_id_node);
 											     Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-									             PoiInstance.addLiteral(district, PoiLocation);
+											     PoiLocation.addLiteral(classification_excursionsregion_location, PoiInstance);
 											     System.out.println("instance excursionsRegion: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -949,7 +985,7 @@ public class Updater_Main {
 										         String str_id_node= listElement.getAttributes().getNamedItem("id").getNodeValue();
 										         System.out.println("str_id_nodeaquaticsDistrict: "+str_id_node);
 											 	 Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-									             PoiInstance.addLiteral(district, PoiLocation);
+											 	 PoiLocation.addLiteral(classification_aquaticsdistrict_location, PoiInstance);
 											     System.out.println("instance aquaticsDistrict: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -968,7 +1004,7 @@ public class Updater_Main {
 								 String str_id_state = stateNode.item(0).getAttributes().getNamedItem("id").getNodeValue();
 								 System.out.println("str_id_state length: "+str_id_state);
 							 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_state );
-				                PoiInstance.addLiteral(district, PoiLocation);
+							 	PoiLocation.addLiteral(poi_state, PoiInstance);
 							     System.out.println("instance state: "+PoiInstance.toString());
 							     
 							} catch (Exception e) {
@@ -1003,11 +1039,69 @@ public class Updater_Main {
 		}//endif for update Location
 		
 		
+		/*
+		 * getting opening hours information
+		 */
+		
+		System.out.println("Do you want to update opening hours? ");
+		aResponse = input.nextLine();    //ans wer for first general loop
+		if (aResponse.equalsIgnoreCase("Yes")) {
+			NodeList openinghourList = doc.getElementsByTagName("openingtimedate");
+			System.out.println("openingHoursList size: "+openinghourList.getLength());
+			//iterate over the list 
+			for (int i = 0; i < openinghourList.getLength(); i++) {
+				Node node = openinghourList.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) node; 
+					NodeList childNodes = eElement.getChildNodes();
+					// creating a My HashTable Dictionary
+					Hashtable<String, String> openinghours_dict = new Hashtable<String, String>();
+					//iterate over every child
+					for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
+					    Node n = childNodes.item(i2);
+					    if (n.getNodeType() == Node.ELEMENT_NODE) {
+							Element childElement = (Element) n;
+							openinghours_dict.put(childElement.getNodeName(), childElement.getTextContent());
+					    }//end if for child
+					}//for child
+					System.out.println("opening hour list: "+openinghours_dict);
+					//method to check if object exist
+				}//endif poiList
+			}//end for poiList
+		}//end if for 
+		
+		
+		/*
+		 * getting poi information
+		 */
+		
+		System.out.println("Do you want to update POI? ");
+		aResponse = input.nextLine();    //ans wer for first general loop
+		if (aResponse.equalsIgnoreCase("Yes")) {
+			NodeList poiList = doc.getElementsByTagName("poi");
+			for (int i = 0; i < poiList.getLength(); i++) {
+				Node node = poiList.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					Element eElement = (Element) node; 
+					try {
+						String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+						 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+						 String str_language = eElement.getAttributes().getNamedItem("language").getNodeValue();
+						 String str_revision = eElement.getAttributes().getNamedItem("revision").getNodeValue();
+						 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
+						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
+						 //getting list of node for every tag
+						 System.out.println("pi name: "+str_name);
+					} catch (Exception e) {
+						// TODO: handle exception
+					}
+				}//endif poiList
+			}//end for poiList
+		}//end if for poi
+		
 		
 		System.out.println("Do you want to update rdf file? ");
-		
 		aResponse = input.nextLine();    //ans wer for first general loop
-		
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			//printing result
 			//defining basic variables
@@ -1022,15 +1116,11 @@ public class Updater_Main {
 	            	poi_file.createNewFile();
 	            }
 	            //adding content
-	            //PoiOntModel.write(System.out,"RDF/XML");
 	         // get the content in bytes
 	            byte[] contentInBytes = PoiOntModel.toString().getBytes();
-
 	            poi_out_file.write(contentInBytes);
 	            poi_out_file.flush();
 	            poi_out_file.close();
-
-				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1045,7 +1135,8 @@ public class Updater_Main {
 	        }//finish file writing
 
 		}//endif file writing
-				
+
+						
 	    
 		
 		//closing comunication with origin databases

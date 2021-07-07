@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -111,7 +112,6 @@ public class JenaUtilities {
 				 	if (!(currentID==null)) {
 				 		//we add quotation marks and a second option 
 				 }
-				 	
 		      }
 			 //GLEIF1_items.close();
 		return PoiInstance;
@@ -334,5 +334,35 @@ public class JenaUtilities {
         }
 		return false;
 	}
+	
+	
+	public static boolean checkIndividualProperties(String ns, String IndClass, OntModel ontModel, Hashtable<String, String> properties_List) {
+		OntClass  anIndClass;
+		Individual thisInstance = null;
+		anIndClass = ontModel.getOntClass( ns + IndClass );
+		//System.out.println("String ID modified "+ID2);//flag
+		 ExtendedIterator  model_items = anIndClass.listInstances();//here I get all instances in model
+		 //checking if there is any individual
+		 if (model_items.hasNext()) {
+			//begins loop 
+			 while (model_items.hasNext())
+		      {
+				 thisInstance = (Individual) model_items.next();
+				 	try {
+				 		thisInstance.getPropertyValue(property);
+				 	}
+				 	catch(java.lang.NullPointerException e) {
+						return false;
+
+				 	}
+				 	
+		      }//endif while
+
+		} else {
+			return false;
+		}//endif model_items
+		return PoiInstance;
+	}//ends getIndividualbyID
+
 	
 }//JenaUtilities
