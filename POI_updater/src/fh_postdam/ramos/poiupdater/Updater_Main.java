@@ -1064,8 +1064,15 @@ public class Updater_Main {
 							openinghours_dict.put(childElement.getNodeName(), childElement.getTextContent());
 					    }//end if for child
 					}//for child
-					System.out.println("opening hour list: "+openinghours_dict);
-					//method to check if object exist
+					//checking if an opening hour exist
+					if (!(JenaUtilities.checkIndividualProperties(POI_NS, "OpeningHours", PoiOntModel, openinghours_dict))) {
+						try {
+							System.out.println("opening hour object to be created: "+openinghours_dict);
+						} catch (Exception e) {
+							System.out.println("opening hours is null");
+						}
+					}
+					
 				}//endif poiList
 			}//end for poiList
 		}//end if for 

@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.function.library.print;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.rdf.model.Resource;
@@ -337,7 +338,7 @@ public class JenaUtilities {
 	}
 	
 	
-	public static boolean checkIndividualProperties(String ns, String IndClass, OntModel ontModel, Hashtable<Property, String> properties_List) {
+	public static boolean checkIndividualProperties(String ns, String IndClass, OntModel ontModel, Hashtable<String, String> properties_List) {
 		OntClass  anIndClass;
 		boolean Ind_exist;
 		Ind_exist=false;
@@ -351,24 +352,36 @@ public class JenaUtilities {
 			 while (model_items.hasNext())
 		      {
 				 thisInstance = (Individual) model_items.next();
-				 List<Boolean>property_exist;
+				 List<Boolean>property_exist = null;
 				 	try {
 				 		//get property
 				 	// getting keySet() into Set
-				        Set<Property> setOfProperties = properties_List.keySet();
+				        Set<String> setOfProperties = properties_List.keySet();
 				     // for-each loop
-				        for(Property key : setOfProperties) {
-					 		String property_value = (thisInstance.getPropertyValue(key)).toString();
+				        for(String key : setOfProperties) {
+				        	Property aProperty = ontModel.getProperty(ns+key);
+					 		String property_value = (thisInstance.getPropertyValue(aProperty)).toString();
 					 		//comparing values
 					 		if (property_value.equalsIgnoreCase(properties_List.get(key))) {
-								
+					 			property_exist.add(true);
 							}//endif comparing properties
-
 				        }//end for properties
+				        //check size of property list dictionary
+				        try {
+				        	if (property_exist.size()>0) {
+					        	//if any is false, the object do not exist
+						        if (checkBooleanList(property_exist)) {
+									return true;
+								}//checking if exist
+							}//if not continue
+						} catch (Exception e) {
+							System.out.println("exception in property_exist.size");
+						}
 				 	}
 				 	catch(java.lang.NullPointerException e) {
-						return false;
-
+						System.out.println("setOfProperties");
+				 		e.printStackTrace();
+						return true;
 				 	}
 				 	
 		      }//endif while
@@ -380,6 +393,15 @@ public class JenaUtilities {
 		}//endif model_items
 		return Ind_exist;
 	}//ends getIndividualbyID
+	
+	
+	//checking all is true in an array
+	public static boolean checkBooleanList(List<Boolean>myArray) {
+		for (int i = 0; i < myArray.size(); i++) {
+			  if (!myArray.get(i)) return false;
+			}
+		return true;
+	}//end of checkBooleanList
 
 	
 }//JenaUtilities
