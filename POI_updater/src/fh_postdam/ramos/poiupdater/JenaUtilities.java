@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.w3c.dom.Node;  
 import org.w3c.dom.Element;
@@ -336,20 +337,34 @@ public class JenaUtilities {
 	}
 	
 	
-	public static boolean checkIndividualProperties(String ns, String IndClass, OntModel ontModel, Hashtable<String, String> properties_List) {
+	public static boolean checkIndividualProperties(String ns, String IndClass, OntModel ontModel, Hashtable<Property, String> properties_List) {
 		OntClass  anIndClass;
+		boolean Ind_exist;
+		Ind_exist=false;
 		Individual thisInstance = null;
 		anIndClass = ontModel.getOntClass( ns + IndClass );
 		//System.out.println("String ID modified "+ID2);//flag
-		 ExtendedIterator  model_items = anIndClass.listInstances();//here I get all instances in model
+		ExtendedIterator  model_items = anIndClass.listInstances();//here I get all instances in model
 		 //checking if there is any individual
-		 if (model_items.hasNext()) {
+		if (model_items.hasNext()) {
 			//begins loop 
 			 while (model_items.hasNext())
 		      {
 				 thisInstance = (Individual) model_items.next();
+				 List<Boolean>property_exist;
 				 	try {
-				 		thisInstance.getPropertyValue(property);
+				 		//get property
+				 	// getting keySet() into Set
+				        Set<Property> setOfProperties = properties_List.keySet();
+				     // for-each loop
+				        for(Property key : setOfProperties) {
+					 		String property_value = (thisInstance.getPropertyValue(key)).toString();
+					 		//comparing values
+					 		if (property_value.equalsIgnoreCase(properties_List.get(key))) {
+								
+							}//endif comparing properties
+
+				        }//end for properties
 				 	}
 				 	catch(java.lang.NullPointerException e) {
 						return false;
@@ -357,11 +372,13 @@ public class JenaUtilities {
 				 	}
 				 	
 		      }//endif while
+			 
+			 //if all are true
 
 		} else {
 			return false;
 		}//endif model_items
-		return PoiInstance;
+		return Ind_exist;
 	}//ends getIndividualbyID
 
 	
