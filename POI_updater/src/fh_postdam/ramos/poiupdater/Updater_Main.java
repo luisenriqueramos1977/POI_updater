@@ -49,6 +49,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.CannotCreateException;
+import org.apache.jena.sparql.function.library.print;
 import org.apache.jena.system.Txn;
 import org.apache.jena.util.FileManager;
 
@@ -1086,10 +1087,11 @@ public class Updater_Main {
 		aResponse = input.nextLine();    //ans wer for first general loop
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			NodeList poiList = doc.getElementsByTagName("poi");
-			for (int i = 0; i < poiList.getLength(); i++) {
+			for (int i = 0; i < 3; i++) {//poiList.getLength()
 				Node node = poiList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE) {
-					Element eElement = (Element) node; 
+					Element eElement = (Element) node;
+					NodeList childNodes = eElement.getChildNodes();
 					try {
 						String str_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
 						 String str_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
@@ -1098,7 +1100,68 @@ public class Updater_Main {
 						 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
 						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
 						 //getting list of node for every tag
-						 System.out.println("pi name: "+str_name);
+						 System.out.println("poi name: "+str_name);
+						 System.out.println("getting corresponding poi values and printing it (must created object) and link it");
+						 for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
+							    Node n = childNodes.item(i2);
+								    if (n.getNodeType() == Node.ELEMENT_NODE) {
+										Element childElement = (Element) n;
+										NodeList childSubNodes = childElement.getChildNodes();
+										System.out.println("node name: "+ childElement.getNodeName());
+										System.out.println("node value: "+ childElement.getTextContent());
+										//getting nodes of address
+										for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
+											Node SubNode = childSubNodes.item(i3);
+											if (SubNode.getNodeType() == Node.ELEMENT_NODE) {
+												Element childSubElement = (Element) SubNode;
+												System.out.println("node child name: "+ childSubElement.getNodeName());
+												System.out.println("node child value: "+ childSubElement.getTextContent());
+												//for the case of address
+												if (childSubElement.getNodeName()=="address") {
+													NodeList addresChildNodes = childSubElement.getChildNodes();
+													for (int i4 = 0; i4 < addresChildNodes.getLength(); i4++) {
+														Node SubAddressNode = addresChildNodes.item(i4);
+														if (SubAddressNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childSubAddressElement = (Element) SubAddressNode;
+														System.out.println("node address child name: "+ childSubAddressElement.getNodeName());
+														System.out.println("node address child value: "+ childSubAddressElement.getTextContent());
+														//for the case of coordinates
+														if (childSubAddressElement.getNodeName()=="coordinates") {
+															NodeList coordinatesChildNodes = childSubAddressElement.getChildNodes();
+															for (int i5 = 0; i5 < coordinatesChildNodes.getLength(); i5++) {
+																Node coordinateNode = coordinatesChildNodes.item(i5);
+																if (coordinateNode.getNodeType() == Node.ELEMENT_NODE) {
+																Element coordinateElement = (Element) coordinateNode;
+																System.out.println("node address coordinates name: "+ coordinateElement.getNodeName());																
+																//for the case of a coordinate
+																if (coordinateElement.getNodeName()=="coordinate") {
+																	NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
+																	for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
+																		Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
+																		if (coordinateNodeAtt.getNodeType() == Node.ELEMENT_NODE) {
+																		Element coordinateElementAtt = (Element) coordinateNodeAtt;
+																		System.out.println("node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
+																		System.out.println("node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
+																		}
+																	}
+																}// if coordinate
+																}
+															}
+														}//if coordinates
+														
+														}
+													}
+												}
+											}
+										}
+									
+									
+									//System.out.println("node value: "+childElement.getTextContent());
+									//depending of the node we proceed to do a given operation
+							    }//end if for child
+						 }//for child
+						 
+						 
 					} catch (Exception e) {
 						// TODO: handle exception
 					}
@@ -1146,7 +1209,7 @@ public class Updater_Main {
 						
 	    
 		
-		//closing comunication with origin databases
+		//saving and closing comunication with origin databases
 		PoiDataset.commit();
 		
 		
