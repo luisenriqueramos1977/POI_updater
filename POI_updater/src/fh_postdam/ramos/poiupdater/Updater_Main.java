@@ -1155,6 +1155,14 @@ public class Updater_Main {
 												//for connections
 												if (childSubElement.getNodeName()=="connections") {
 													NodeList connectionsChildNodes = childSubElement.getChildNodes();
+													for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+														Node connectionNode = connectionsChildNodes.item(i4);
+														if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childConnectionElement = (Element) connectionNode;
+														System.out.println("node a connection child name: "+ childConnectionElement.getNodeName());
+														System.out.println("node a connection child value: "+ childConnectionElement.getTextContent());
+														}//if SubAddressNode
+													}//for i4
 												}//if connections
 											}//if SubNode
 										}//for i3
