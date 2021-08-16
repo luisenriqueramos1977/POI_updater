@@ -1149,11 +1149,15 @@ public class Updater_Main {
 															}
 														}//if coordinates
 														
-														}
-													}
-												}
-											}
-										}
+														}//if SubAddressNode
+													}//for i4
+												}//if childSubElement address
+												//for connections
+												if (childSubElement.getNodeName()=="connections") {
+													NodeList connectionsChildNodes = childSubElement.getChildNodes();
+												}//if connections
+											}//if SubNode
+										}//for i3
 									
 									
 									//System.out.println("node value: "+childElement.getTextContent());
