@@ -368,14 +368,18 @@ public class JenaUtilities {
 				        }//end for properties
 				        //check size of property list dictionary
 				        try {
-				        	if (property_exist.size()>0) {
-					        	//if any is false, the object do not exist
-						        if (checkBooleanList(property_exist)) {
-									return true;
-								}//checking if exist
-							}//if not continue
+				        	if (property_exist !=null) {
+				        		if (property_exist.size()>0) {
+						        	//if any is false, the object do not exist
+							        if (checkBooleanList(property_exist)) {
+										return true;
+									}//checking if exist
+								}//if not continue
+							}//property_exist !=null
+				        	
 						} catch (Exception e) {
-							System.out.println("exception in property_exist.size");
+							e.printStackTrace();
+							System.out.println("exception in property_exist.size"+e);
 						}
 				 	}
 				 	catch(java.lang.NullPointerException e) {

@@ -69,6 +69,7 @@ public class Updater_Main {
 	private static OntClass  State;
 	private static OntClass  Location;
 	private static OntClass  poi;
+	private static OntClass  OpeningHours;
 	
 	
 	
@@ -87,6 +88,12 @@ public class Updater_Main {
 	public static DatatypeProperty poi_hasOnlineOrder;
 	public static DatatypeProperty poi_hasVoucherOrder;
 	public static DatatypeProperty poi_description;
+	public static DatatypeProperty datefrom;
+	public static DatatypeProperty dateto;
+	public static DatatypeProperty timefrom;
+	public static DatatypeProperty timeto;
+	public static DatatypeProperty open;
+
 	
 	
 	
@@ -108,6 +115,7 @@ public class Updater_Main {
 	public static ObjectProperty classification_aquaticsdistrict_location;
 	public static ObjectProperty poi_region;
 	public static ObjectProperty poi_state;
+
 
 	
 	
@@ -197,17 +205,60 @@ public class Updater_Main {
 		 try {
 			    Aquaticsdistrict = PoiOntModel.getOntClass(POI_NS + "Aquaticsdistrict" );
 			    Excursionsregion = PoiOntModel.getOntClass(POI_NS + "Excursionsregion" );
+			    OpeningHours= PoiOntModel.getOntClass(POI_NS + "OpeningHours" );
 		    	
 			} catch (Exception e) {
 				// TODO: handle exception
 				Aquaticsdistrict = PoiOntModel.createClass( POI_NS + "Aquaticsdistrict" );
 				Excursionsregion = PoiOntModel.createClass( POI_NS + "Excursionsregion" );
+				OpeningHours= PoiOntModel.createClass(POI_NS + "OpeningHours" );
 			}
 		 
 
 			try {
 				
 				poi = PoiOntModel.getOntClass(POI_NS + "poi" );
+				
+				
+				datefrom = PoiOntModel.getDatatypeProperty(POI_NS + "datefrom");
+				if (datefrom==null) {
+					datefrom = PoiOntModel.createDatatypeProperty(POI_NS + "datefrom");
+					//add domain and range
+					poi_description.addDomain(OpeningHours);
+					poi_description.addRange(XSD.dateTime);
+				}
+				
+				dateto = PoiOntModel.getDatatypeProperty(POI_NS + "dateto");
+				if (dateto==null) {
+					dateto = PoiOntModel.createDatatypeProperty(POI_NS + "dateto");
+					//add domain and range
+					poi_description.addDomain(OpeningHours);
+					poi_description.addRange(XSD.dateTime);
+				}
+				
+				timefrom = PoiOntModel.getDatatypeProperty(POI_NS + "timefrom");
+				if (timefrom==null) {
+					timefrom = PoiOntModel.createDatatypeProperty(POI_NS + "timefrom");
+					//add domain and range
+					poi_description.addDomain(OpeningHours);
+					poi_description.addRange(XSD.dateTime);
+				}
+				
+				timeto = PoiOntModel.getDatatypeProperty(POI_NS + "timeto");
+				if (timeto==null) {
+					timeto = PoiOntModel.createDatatypeProperty(POI_NS + "timeto");
+					//add domain and range
+					poi_description.addDomain(OpeningHours);
+					poi_description.addRange(XSD.dateTime);
+				}
+				
+				open = PoiOntModel.getDatatypeProperty(POI_NS + "open");
+				if (open==null) {
+					open = PoiOntModel.createDatatypeProperty(POI_NS + "open");
+					//add domain and range
+					poi_description.addDomain(OpeningHours);
+					poi_description.addRange(XSD.xboolean);
+				}
 				
 				poi_description = PoiOntModel.getDatatypeProperty(POI_NS + "description");
 				if (poi_description==null) {
@@ -1114,6 +1165,8 @@ public class Updater_Main {
 					if (!(JenaUtilities.checkIndividualProperties(POI_NS, "OpeningHours", PoiOntModel, openinghours_dict))) {
 						try {
 							System.out.println("opening hour object to be created: "+openinghours_dict);
+							
+							
 						} catch (Exception e) {
 							System.out.println("opening hours is null");
 						}
@@ -1154,6 +1207,8 @@ public class Updater_Main {
 							 //if individual does not exist, then we create it
 							 System.out.println("creating poi: "+POI_NS +  str_id);
 							 
+							 //poi_individual = PoiOntModel.createIndividual( POI_NS +  str_id,  poi);
+							 
 							 for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
 								    Node n = childNodes.item(i2);
 									    if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -1165,11 +1220,9 @@ public class Updater_Main {
 											//getting description
 											if (childElement.getNodeName()=="description") {
 												//adding description to poi
-												
 												System.out.println("adding description to poi ");
-												
-												
-											}//endif childElement.getNodeName()=="location"
+												//poi_individual.addLiteral(poi_description, childElement.getTextContent());
+											}//endif childElement.getNodeName()=="description"
 											
 											//getting location
 											if (childElement.getNodeName()=="location") {
@@ -1177,7 +1230,10 @@ public class Updater_Main {
 												String location_type = childElement.getAttributes().getNamedItem("type").getNodeValue();
 												System.out.println("\t\t node location id: "+ location_id);
 												System.out.println("\t\t node location type: "+ location_type);
-												
+												System.out.println("adding location to poi ");
+												Individual location_individual = PoiOntModel.getIndividual(POI_NS +  location_id);
+												System.out.println("\t\t location_individual: "+ location_individual);
+												//poi_individual.addLiteral(poi_description, childElement.getTextContent());
 											}//endif childElement.getNodeName()=="location"
 											
 											for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
@@ -1193,6 +1249,9 @@ public class Updater_Main {
 														String targetgroup_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
 														System.out.println("\t\t node targetgroup_type id: "+ targetgroup_id);
 														System.out.println("\t\t node targetgroup_type type: "+ targetgroup_type);
+														System.out.println("adding targetgroup to poi ");
+														Individual targetgroup_individual = PoiOntModel.getIndividual(POI_NS +  targetgroup_id);
+														System.out.println("\t\t targetgroup_individual: "+ targetgroup_individual);
 														
 														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
@@ -1203,6 +1262,9 @@ public class Updater_Main {
 														String metainformation_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
 														System.out.println("\t\t node metainformation_type id: "+ metainformation_id);
 														System.out.println("\t\t node metainformation_type type: "+ metainformation_type);
+														System.out.println("adding metainformation to poi ");
+														Individual metainformation_individual = PoiOntModel.getIndividual(POI_NS +  metainformation_id);
+														System.out.println("\t\t metainformation_individual: "+ metainformation_individual);
 														
 														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
@@ -1213,6 +1275,9 @@ public class Updater_Main {
 														String classification_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
 														System.out.println("\t\t node classification id: "+ classification_id);
 														System.out.println("\t\t node classification type: "+ classification_type);
+														System.out.println("\t\t adding classification to poi ");
+														Individual classification_individual = PoiOntModel.getIndividual(POI_NS +  classification_id);
+														System.out.println("\t\t classification_individual: "+ classification_individual);
 														
 														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
@@ -1235,13 +1300,18 @@ public class Updater_Main {
 													//for the case of opening hours
 													if (childSubElement.getNodeName()=="openingtimedate") {
 														NodeList connectionsChildNodes = childSubElement.getChildNodes();
-														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+														//create opening time individual
+														Individual openingtimeInd = null;
+														openingtimeInd.addOntClass(OpeningHours);//adding individual to openinghour class
+														
+														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) { 
 															Node connectionNode = connectionsChildNodes.item(i4);
 															if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
 															Element childConnectionElement = (Element) connectionNode;
 															System.out.println("\t\t node openingtimedate child name: "+ childConnectionElement.getNodeName());
 															System.out.println("\t\t node openingtimedate child value: "+ childConnectionElement.getTextContent());
 															//getting details of opening hours
+															
 															
 															}//if connectionNode
 														}//for i4
