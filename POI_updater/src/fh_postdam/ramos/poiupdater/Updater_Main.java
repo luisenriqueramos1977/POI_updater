@@ -1109,13 +1109,89 @@ public class Updater_Main {
 										NodeList childSubNodes = childElement.getChildNodes();
 										System.out.println("node name: "+ childElement.getNodeName());
 										System.out.println("node value: "+ childElement.getTextContent());
-										//getting nodes of address
+										
+										
+										
 										for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
 											Node SubNode = childSubNodes.item(i3);
 											if (SubNode.getNodeType() == Node.ELEMENT_NODE) {
 												Element childSubElement = (Element) SubNode;
-												System.out.println("node child name: "+ childSubElement.getNodeName());
-												System.out.println("node child value: "+ childSubElement.getTextContent());
+												System.out.println("\t node child name: "+ childSubElement.getNodeName());
+												System.out.println("\t node child value: "+ childSubElement.getTextContent());
+												
+												//for the case of classification_targetgroup_poi
+												if (childSubElement.getNodeName()=="classification_targetgroup_poi") {
+													String targetgroup_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+													String targetgroup_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+													System.out.println("\t\t node targetgroup_type id: "+ targetgroup_id);
+													System.out.println("\t\t node targetgroup_type type: "+ targetgroup_type);
+													
+													
+												}//if childSubElement.getNodeName()=="pricerangecomplex"
+												
+												//for the case of classification_metainformation_poi
+												if (childSubElement.getNodeName()=="classification_metainformation_poi") {
+													String metainformation_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+													String metainformation_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+													System.out.println("\t\t node metainformation_type id: "+ metainformation_id);
+													System.out.println("\t\t node metainformation_type type: "+ metainformation_type);
+													
+													
+												}//if childSubElement.getNodeName()=="pricerangecomplex"
+												
+												//for the case of classification
+												if (childSubElement.getNodeName()=="classification") {
+													String classification_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+													String classification_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+													System.out.println("\t\t node classification id: "+ classification_id);
+													System.out.println("\t\t node classification type: "+ classification_type);
+													
+													
+												}//if childSubElement.getNodeName()=="pricerangecomplex"
+												
+												//for the case of pricerangecomplex
+												if (childSubElement.getNodeName()=="pricerangecomplex") {
+													NodeList connectionsChildNodes = childSubElement.getChildNodes();
+													for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+														Node connectionNode = connectionsChildNodes.item(i4);
+														if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childConnectionElement = (Element) connectionNode;
+														System.out.println("\t\t node pricerangecomplex child name: "+ childConnectionElement.getNodeName());
+														System.out.println("\t\t node pricerangecomplex child value: "+ childConnectionElement.getTextContent());
+														//getting details of opening hours
+														
+														}//if connectionNode
+													}//for i4
+												}//if childSubElement.getNodeName()=="pricerangecomplex"
+												
+												//for the case of opening hours
+												if (childSubElement.getNodeName()=="openingtimedate") {
+													NodeList connectionsChildNodes = childSubElement.getChildNodes();
+													for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+														Node connectionNode = connectionsChildNodes.item(i4);
+														if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childConnectionElement = (Element) connectionNode;
+														System.out.println("\t\t node openingtimedate child name: "+ childConnectionElement.getNodeName());
+														System.out.println("\t\t node openingtimedate child value: "+ childConnectionElement.getTextContent());
+														//getting details of opening hours
+														
+														}//if connectionNode
+													}//for i4
+												}//if connection
+												
+												//for the case of connections
+												if (childSubElement.getNodeName()=="connection") {
+													NodeList connectionsChildNodes = childSubElement.getChildNodes();
+													for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+														Node connectionNode = connectionsChildNodes.item(i4);
+														if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childConnectionElement = (Element) connectionNode;
+														System.out.println("\t\t node a connection child name: "+ childConnectionElement.getNodeName());
+														System.out.println("\t\t node a connection child value: "+ childConnectionElement.getTextContent());
+														}//if SubAddressNode
+													}//for i4
+												}//if connection
+												
 												//for the case of address
 												if (childSubElement.getNodeName()=="address") {
 													NodeList addresChildNodes = childSubElement.getChildNodes();
@@ -1123,47 +1199,36 @@ public class Updater_Main {
 														Node SubAddressNode = addresChildNodes.item(i4);
 														if (SubAddressNode.getNodeType() == Node.ELEMENT_NODE) {
 														Element childSubAddressElement = (Element) SubAddressNode;
-														System.out.println("node address child name: "+ childSubAddressElement.getNodeName());
-														System.out.println("node address child value: "+ childSubAddressElement.getTextContent());
+														System.out.println("\t\t node address child name: "+ childSubAddressElement.getNodeName());
+														System.out.println("\t\t node address child value: "+ childSubAddressElement.getTextContent());
 														//for the case of coordinates
 														if (childSubAddressElement.getNodeName()=="coordinates") {
 															NodeList coordinatesChildNodes = childSubAddressElement.getChildNodes();
 															for (int i5 = 0; i5 < coordinatesChildNodes.getLength(); i5++) {
 																Node coordinateNode = coordinatesChildNodes.item(i5);
 																if (coordinateNode.getNodeType() == Node.ELEMENT_NODE) {
-																Element coordinateElement = (Element) coordinateNode;
-																System.out.println("node address coordinates name: "+ coordinateElement.getNodeName());																
-																//for the case of a coordinate
-																if (coordinateElement.getNodeName()=="coordinate") {
-																	NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
-																	for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
-																		Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
-																		if (coordinateNodeAtt.getNodeType() == Node.ELEMENT_NODE) {
-																		Element coordinateElementAtt = (Element) coordinateNodeAtt;
-																		System.out.println("node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
-																		System.out.println("node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
-																		}
-																	}
-																}// if coordinate
-																}
-															}
+																	Element coordinateElement = (Element) coordinateNode;
+																	System.out.println("\t\t\t node address coordinates name: "+ coordinateElement.getNodeName());																
+																	//for the case of a coordinate
+																	if (coordinateElement.getNodeName()=="coordinate") {
+																		NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
+																		for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
+																			Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
+																			if (coordinateNodeAtt.getNodeType() == Node.ELEMENT_NODE) {
+																			Element coordinateElementAtt = (Element) coordinateNodeAtt;
+																			System.out.println("\t\t\t\t node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
+																			System.out.println("\t\t\t\t node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
+																			}//if coordinateNodeAtt
+																		}//for coordinateChildAttributes
+																	}// coordinateElement.getNodeName()=="coordinate" 
+																}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
+															}//for coordinatesChildNodes.getLength()
 														}//if coordinates
 														
 														}//if SubAddressNode
 													}//for i4
 												}//if childSubElement address
-												//for connections
-												if (childSubElement.getNodeName()=="connections") {
-													NodeList connectionsChildNodes = childSubElement.getChildNodes();
-													for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
-														Node connectionNode = connectionsChildNodes.item(i4);
-														if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
-														Element childConnectionElement = (Element) connectionNode;
-														System.out.println("node a connection child name: "+ childConnectionElement.getNodeName());
-														System.out.println("node a connection child value: "+ childConnectionElement.getTextContent());
-														}//if SubAddressNode
-													}//for i4
-												}//if connections
+				
 											}//if SubNode
 										}//for i3
 									
