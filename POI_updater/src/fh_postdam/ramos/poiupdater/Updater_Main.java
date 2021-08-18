@@ -70,6 +70,10 @@ public class Updater_Main {
 	private static OntClass  Location;
 	private static OntClass  poi;
 	private static OntClass  OpeningHours;
+	private static OntClass  Weekday;
+	private static OntClass  Price;
+
+	
 	
 	
 	
@@ -115,6 +119,7 @@ public class Updater_Main {
 	public static ObjectProperty classification_aquaticsdistrict_location;
 	public static ObjectProperty poi_region;
 	public static ObjectProperty poi_state;
+	public static ObjectProperty poi_price;
 
 
 	
@@ -219,6 +224,10 @@ public class Updater_Main {
 				
 				poi = PoiOntModel.getOntClass(POI_NS + "poi" );
 				
+				Weekday = PoiOntModel.getOntClass(POI_NS + "Weekday" );
+				
+				Price  = PoiOntModel.getOntClass(POI_NS + "Price" );
+				
 				
 				datefrom = PoiOntModel.getDatatypeProperty(POI_NS + "datefrom");
 				if (datefrom==null) {
@@ -314,6 +323,17 @@ public class Updater_Main {
 					poi_state = PoiOntModel.createObjectProperty(POI_NS + "state");
 				}
 				
+				poi_price = PoiOntModel.getObjectProperty(POI_NS + "price");
+				if (poi_price==null) {
+					poi_price = PoiOntModel.createObjectProperty(POI_NS + "price");
+				}
+				
+				if (poi_price==null) {
+					poi_price = PoiOntModel.createObjectProperty(POI_NS + "price");
+					//add domain and range
+					poi_price.addDomain(poi);
+					poi_price.addRange(Price);
+				}
 				
 			} catch (Exception e) {
 				// TODO: handle exception
@@ -401,6 +421,7 @@ public class Updater_Main {
 		System.out.println(poi_hasVoucherOrder);
 		System.out.println(poi_description);
 		System.out.println(poi);
+		System.out.println(Weekday);
 
 
 		/*
@@ -1202,14 +1223,23 @@ public class Updater_Main {
 						 System.out.println("getting corresponding poi values and printing it (must created object) and link it");
 						 
 						 Individual poi_individual = PoiOntModel.getIndividual(POI_NS +  str_id);
-						 
+						 //adding attributes to the poi
+						
 						 if (poi_individual ==null) {
 							 //if individual does not exist, then we create it
 							 System.out.println("creating poi: "+POI_NS +  str_id);
-							 
-							 //poi_individual = PoiOntModel.createIndividual( POI_NS +  str_id,  poi);
-							 
-							 for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
+							 poi_individual = PoiOntModel.createIndividual( POI_NS +  str_id,  poi);
+							//doing tstamp to xsd format exchange
+						 	 XSDDateTime aDate_xsd = null;
+						 	 aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
+						 	 poi_individual.addLiteral(poi_id, str_id);
+						 	 poi_individual.addLiteral(poi_language, str_language);
+						 	 poi_individual.addLiteral(poi_revision, str_revision);
+						 	 poi_individual.addLiteral(poi_name, str_name);
+						 	 poi_individual.addLiteral(poi_tstamp, aDate_xsd);
+						 
+						 
+						 	for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
 								    Node n = childNodes.item(i2);
 									    if (n.getNodeType() == Node.ELEMENT_NODE) {
 											Element childElement = (Element) n;
@@ -1221,7 +1251,10 @@ public class Updater_Main {
 											if (childElement.getNodeName()=="description") {
 												//adding description to poi
 												System.out.println("adding description to poi ");
-												//poi_individual.addLiteral(poi_description, childElement.getTextContent());
+												if (childElement.getTextContent() !=null) {
+													poi_individual.addLiteral(poi_description, childElement.getTextContent());
+												}
+												
 											}//endif childElement.getNodeName()=="description"
 											
 											//getting location
@@ -1233,7 +1266,10 @@ public class Updater_Main {
 												System.out.println("adding location to poi ");
 												Individual location_individual = PoiOntModel.getIndividual(POI_NS +  location_id);
 												System.out.println("\t\t location_individual: "+ location_individual);
-												//poi_individual.addLiteral(poi_description, childElement.getTextContent());
+												if (location_individual !=null) {
+													poi_individual.addLiteral(location, location_individual);
+												}
+												
 											}//endif childElement.getNodeName()=="location"
 											
 											for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
@@ -1278,31 +1314,46 @@ public class Updater_Main {
 														System.out.println("\t\t adding classification to poi ");
 														Individual classification_individual = PoiOntModel.getIndividual(POI_NS +  classification_id);
 														System.out.println("\t\t classification_individual: "+ classification_individual);
-														
+														if (classification_individual !=null) {
+															poi_individual.addLiteral(classification_category_poi, classification_individual);
+														}
 														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
 													
 													//for the case of pricerangecomplex
 													if (childSubElement.getNodeName()=="pricerangecomplex") {
-														NodeList connectionsChildNodes = childSubElement.getChildNodes();
-														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
-															Node connectionNode = connectionsChildNodes.item(i4);
-															if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
-															Element childConnectionElement = (Element) connectionNode;
-															System.out.println("\t\t node pricerangecomplex child name: "+ childConnectionElement.getNodeName());
-															System.out.println("\t\t node pricerangecomplex child value: "+ childConnectionElement.getTextContent());
-															//getting details of opening hours
+														//creating price individual
+														Individual priceInd = PoiOntModel.createIndividual(Price);
+														
+														NodeList pricesChildNodes = childSubElement.getChildNodes();
+														for (int i4 = 0; i4 < pricesChildNodes.getLength(); i4++) {
+															Node priceNode = pricesChildNodes.item(i4);
+															if (priceNode.getNodeType() == Node.ELEMENT_NODE) {
+															Element childPriceElement = (Element) priceNode;
+															System.out.println("\t\t node pricerangecomplex child name: "+ childPriceElement.getNodeName());
+															System.out.println("\t\t node pricerangecomplex child value: "+ childPriceElement.getTextContent());
+															//adding details to 
+															switch (childPriceElement.getNodeName()) {
+															case "category":
+																
+																break;
+															case "price":
+																
+																break;
+															
+															}
 															
 															}//if connectionNode
 														}//for i4
+														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
 													
 													//for the case of opening hours
 													if (childSubElement.getNodeName()=="openingtimedate") {
 														NodeList connectionsChildNodes = childSubElement.getChildNodes();
 														//create opening time individual
-														Individual openingtimeInd = null;
-														openingtimeInd.addOntClass(OpeningHours);//adding individual to openinghour class
+														
+														Individual openingtimeInd = PoiOntModel.createIndividual(OpeningHours);
 														
 														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) { 
 															Node connectionNode = connectionsChildNodes.item(i4);
@@ -1310,12 +1361,73 @@ public class Updater_Main {
 															Element childConnectionElement = (Element) connectionNode;
 															System.out.println("\t\t node openingtimedate child name: "+ childConnectionElement.getNodeName());
 															System.out.println("\t\t node openingtimedate child value: "+ childConnectionElement.getTextContent());
-															//getting details of opening hours
-															
-															
+															//adding data to open hours objects
+															 switch (childConnectionElement.getNodeName()) {
+													         case "datefrom":
+													        	 try {
+													        		 openingtimeInd.addLiteral(datefrom, childConnectionElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													         	 
+													             break;
+													         case "dateto":
+													        	 try {
+													        		 openingtimeInd.addLiteral(dateto, childConnectionElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													        	 
+													        	 break;
+													         case "timefrom":
+													        	 try {
+													        		 openingtimeInd.addLiteral(timefrom, childConnectionElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													        	 
+													             break;
+													         case "timeto":
+													        	 try {
+													        		 openingtimeInd.addLiteral(timeto, childConnectionElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													        	 
+													             break;
+													         case "open":
+													        	 try {
+													        		 if (childConnectionElement.getTextContent()=="t") {
+														        		 openingtimeInd.addLiteral(open, true);
+																	} else {
+																		openingtimeInd.addLiteral(open, false);
+																	}
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													        	 
+													        	 break;
+													         case "weekday":
+													        	 //trying to get the specific day
+													        	 try {
+													        		 Individual aWeekday = PoiOntModel.getIndividual(POI_NS + childConnectionElement.getTextContent() );
+														        	 if (aWeekday==null) {
+														        		 aWeekday = PoiOntModel.createIndividual( POI_NS +  childConnectionElement.getTextContent(),  Weekday); 
+																	}
+														        	 openingtimeInd.addLiteral(weekday, aWeekday);
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+													        	 break;
+															 }
 															}//if connectionNode
+						
 														}//for i4
-													}//if connection
+														//asigning opentimedate to poi
+														System.out.println("openinghours: "+openinghours.toString());
+														poi_individual.addLiteral(openinghours, openingtimeInd);
+														
+													}//if openingtimedate
 													
 													//for the case of connections
 													if (childSubElement.getNodeName()=="connection") {
@@ -1378,6 +1490,7 @@ public class Updater_Main {
 						 
 						else {//if poi not null
 							System.out.println("poi_individual: "+poi_individual);
+							
 						}//if poi not null
 		
 						 

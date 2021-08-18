@@ -406,6 +406,8 @@ public class JenaUtilities {
 			}
 		return true;
 	}//end of checkBooleanList
-
+	
+	
+	
 	
 }//JenaUtilities
