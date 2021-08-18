@@ -72,6 +72,8 @@ public class Updater_Main {
 	private static OntClass  OpeningHours;
 	private static OntClass  Weekday;
 	private static OntClass  Price;
+	private static OntClass  Connection;
+	private static OntClass  Address;
 
 	
 	
@@ -97,6 +99,8 @@ public class Updater_Main {
 	public static DatatypeProperty timefrom;
 	public static DatatypeProperty timeto;
 	public static DatatypeProperty open;
+	public static DatatypeProperty price;
+	public static DatatypeProperty information;
 
 	
 	
@@ -211,22 +215,42 @@ public class Updater_Main {
 			    Aquaticsdistrict = PoiOntModel.getOntClass(POI_NS + "Aquaticsdistrict" );
 			    Excursionsregion = PoiOntModel.getOntClass(POI_NS + "Excursionsregion" );
 			    OpeningHours= PoiOntModel.getOntClass(POI_NS + "OpeningHours" );
+			    Connection= PoiOntModel.getOntClass(POI_NS + "Connection" );
+			    Address = PoiOntModel.getOntClass(POI_NS + "Address" );
+			    
 		    	
 			} catch (Exception e) {
 				// TODO: handle exception
 				Aquaticsdistrict = PoiOntModel.createClass( POI_NS + "Aquaticsdistrict" );
 				Excursionsregion = PoiOntModel.createClass( POI_NS + "Excursionsregion" );
 				OpeningHours= PoiOntModel.createClass(POI_NS + "OpeningHours" );
+				Connection= PoiOntModel.createClass(POI_NS + "Connection" );
+				Address = PoiOntModel.createClass(POI_NS + "Address" );
 			}
 		 
 
 			try {
 				
 				poi = PoiOntModel.getOntClass(POI_NS + "poi" );
-				
 				Weekday = PoiOntModel.getOntClass(POI_NS + "Weekday" );
-				
 				Price  = PoiOntModel.getOntClass(POI_NS + "Price" );
+				
+				information = PoiOntModel.getDatatypeProperty(POI_NS + "information");
+				if (information==null) {
+					information = PoiOntModel.createDatatypeProperty(POI_NS + "information");
+					//add domain and range
+					information.addDomain(Connection);
+					information.addRange(XSD.xstring);
+				}
+				
+				
+				price = PoiOntModel.getDatatypeProperty(POI_NS + "price");
+				if (price==null) {
+					price = PoiOntModel.createDatatypeProperty(POI_NS + "datefrom");
+					//add domain and range
+					poi_description.addDomain(Price);
+					poi_description.addRange(XSD.xfloat);
+				}
 				
 				
 				datefrom = PoiOntModel.getDatatypeProperty(POI_NS + "datefrom");
@@ -1335,16 +1359,31 @@ public class Updater_Main {
 															//adding details to 
 															switch (childPriceElement.getNodeName()) {
 															case "category":
+																//getting the category igf any
+																Individual price_category = PoiOntModel.getIndividual(POI_NS +  childPriceElement.getTextContent());
+																System.out.println("\t\t price_individual: "+ price_category);
+																if (price_category ==null) {//in individual category does not exist, we create it
+																	price_category = PoiOntModel.createIndividual(POI_NS +  childPriceElement.getTextContent(), Price);
+																}
 																
+																try {
+																	priceInd.addLiteral(category, price_category);
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
 																break;
 															case "price":
-																
+																try {
+																	priceInd.addLiteral(price, childPriceElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
 																break;
-															
-															}
-															
+															}//switch
 															}//if connectionNode
 														}//for i4
+														//adding price object to poi
+														poi_individual.addLiteral(poi_price, priceInd);
 														
 													}//if childSubElement.getNodeName()=="pricerangecomplex"
 													
@@ -1431,6 +1470,7 @@ public class Updater_Main {
 													
 													//for the case of connections
 													if (childSubElement.getNodeName()=="connection") {
+														Individual connectionInd = PoiOntModel.createIndividual(Connection);
 														NodeList connectionsChildNodes = childSubElement.getChildNodes();
 														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
 															Node connectionNode = connectionsChildNodes.item(i4);
@@ -1438,12 +1478,43 @@ public class Updater_Main {
 															Element childConnectionElement = (Element) connectionNode;
 															System.out.println("\t\t node a connection child name: "+ childConnectionElement.getNodeName());
 															System.out.println("\t\t node a connection child value: "+ childConnectionElement.getTextContent());
+															//selecting the kind of connection
+															switch (childConnectionElement.getNodeName()) {
+															case "type":
+																//getting the category igf any
+																Individual connection_type_Ind = PoiOntModel.getIndividual(POI_NS +  childConnectionElement.getTextContent());
+																System.out.println("\t\t connection_type_individual: "+ connection_type_Ind);
+																if (connection_type_Ind ==null) {//in individual category does not exist, we create it
+																	connection_type_Ind = PoiOntModel.createIndividual(POI_NS +  childConnectionElement.getTextContent(), Connection);     
+																}
+																
+																try {
+																	connectionInd.addLiteral(connectionType, connection_type_Ind);
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+																break;
+															case "price":
+																try {
+																	connectionInd.addLiteral(information, childConnectionElement.getTextContent());
+																} catch (Exception e) {
+																	// TODO: handle exception
+																}
+																break;
+															}//switch
 															}//if SubAddressNode
 														}//for i4
+														poi_individual.addLiteral(connection, connectionInd);
 													}//if connection
 													
 													//for the case of address
 													if (childSubElement.getNodeName()=="address") {
+														String address_location=""; 
+														String address_zip="";		 
+														String address_street="";
+														String coordinate_type="";
+														String coord_x ="";
+														String coord_y="";
 														NodeList addresChildNodes = childSubElement.getChildNodes();
 														for (int i4 = 0; i4 < addresChildNodes.getLength(); i4++) {
 															Node SubAddressNode = addresChildNodes.item(i4);
@@ -1451,6 +1522,9 @@ public class Updater_Main {
 															Element childSubAddressElement = (Element) SubAddressNode;
 															System.out.println("\t\t node address child name: "+ childSubAddressElement.getNodeName());
 															System.out.println("\t\t node address child value: "+ childSubAddressElement.getTextContent());
+															
+															
+															
 															//for the case of coordinates
 															if (childSubAddressElement.getNodeName()=="coordinates") {
 																NodeList coordinatesChildNodes = childSubAddressElement.getChildNodes();
@@ -1461,6 +1535,7 @@ public class Updater_Main {
 																		System.out.println("\t\t\t node address coordinates name: "+ coordinateElement.getNodeName());																
 																		//for the case of a coordinate
 																		if (coordinateElement.getNodeName()=="coordinate") {
+																			
 																			NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
 																			for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
 																				Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
@@ -1468,8 +1543,35 @@ public class Updater_Main {
 																				Element coordinateElementAtt = (Element) coordinateNodeAtt;
 																				System.out.println("\t\t\t\t node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
 																				System.out.println("\t\t\t\t node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
+																				//building coordinate  object
+																				if (coordinateElementAtt.getNodeName()=="x") {
+																					coord_x=coordinateElementAtt.getTextContent();
+																				} else if (coordinateElementAtt.getNodeName()=="y") {
+																					coord_y=coordinateElementAtt.getTextContent();
+																				} else if (coordinateElementAtt.getNodeName()=="type") {
+																					coordinate_type=coordinateElementAtt.getTextContent();
+																				}
 																				}//if coordinateNodeAtt
 																			}//for coordinateChildAttributes
+																			//building the coordinate instance
+																			String coordinate_x_y = "coordinate_"+coord_x+"_"+coord_y;
+																			String address_x_y = "address_"+coord_x+"_"+coord_y;
+																			//if exist create instance, else build it
+																			//getting the category igf any
+																			Individual coordinate_Ind = PoiOntModel.getIndividual(POI_NS +  coordinate_x_y);
+																			System.out.println("\t\t connection_type_individual: "+ coordinate_Ind);
+																			if (coordinate_Ind==null) {
+																				
+																			} 
+																			//creating address, adding coordinates and to poi
+																			Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);
+																			poi_address.addLiteral(location, d);
+																			poi_address.addLiteral(zip, d);
+																			poi_address.addLiteral(street, d);
+																			poi_address.addLiteral(coordinates, coordinate_Ind);
+																			poi.addLiteral(address, poi_address);
+																			
+															
 																		}// coordinateElement.getNodeName()=="coordinate" 
 																	}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
 																}//for coordinatesChildNodes.getLength()
