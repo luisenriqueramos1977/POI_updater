@@ -152,7 +152,7 @@ public class Updater_Main {
 	private static Model PoiModel;
 	//poi dataset  
 	private static Dataset PoiDataset;
-	private static String Poi_DB_root = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB2";
+	private static String Poi_DB_root = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
 	private static OntModel PoiOntModel;
 	/*
 	 * this is a first attemp to parser and upload data
@@ -171,7 +171,7 @@ public class Updater_Main {
 		String xml_ns =xml+"#";
 
 		
-		final String aRoot = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB2";
+		final String aRoot = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
 		
 		final Scanner input = new Scanner(System.in);//set up reader
 		
