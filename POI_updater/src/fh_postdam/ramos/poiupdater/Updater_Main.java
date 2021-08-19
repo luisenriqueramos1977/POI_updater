@@ -152,7 +152,7 @@ public class Updater_Main {
 	private static Model PoiModel;
 	//poi dataset  
 	private static Dataset PoiDataset;
-	private static String Poi_DB_root = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
+	private static String Poi_DB_root = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB2";
 	private static OntModel PoiOntModel;
 	/*
 	 * this is a first attemp to parser and upload data
@@ -171,37 +171,38 @@ public class Updater_Main {
 		String xml_ns =xml+"#";
 
 		
-		//getting the file
-		
-		//final String inputOntology = "C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi.rdf";
-		
-		final String aRoot = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB";
+		final String aRoot = "C:\\Users\\luis.ramos\\TDBS\\POI_TDB2";
 		
 		final Scanner input = new Scanner(System.in);//set up reader
 		
-		//first, we create the model specification
-        //FileInputStream fileInputStream = new FileInputStream(inputOntology);
-        //if (fileInputStream == null) {
-         //   throw new IllegalArgumentException( "File: " + inputOntology + " not found");
-        //}
-     // create an empty model
-        //Model model = ModelFactory.createDefaultModel();
-        // read the RDF/XML file
-        //model.read(fileInputStream, "");
-        // write it to standard out
-        //model.write(System.out); 
-        //Dataset ds = TDB2Factory.connectDataset(aRoot);
-       // Txn.executeWrite(ds, ()-> {RDFDataMgr.read(ds, inputOntology);});
-        
-        //Txn.executeRead(ds, ()->{
-        //    RDFDataMgr.write(System.out, ds, Lang.TRIG) ;
-        //}) ;
-        //saving dataset 
-      //closing writing
-       // ds.close();
-        
-        //setting up ontmodel
-
+		//getting the file
+		
+		System.out.println("Do you want to create a clean new model? ");
+		String aResponse1 = input.nextLine();    //ans wer for first general loop
+		if (aResponse1.equalsIgnoreCase("Yes")) {
+			final String inputOntology = "C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi.rdf";
+			//first, we create the model specification
+	        FileInputStream fileInputStream = new FileInputStream(inputOntology);
+	        if (fileInputStream == null) {
+	            throw new IllegalArgumentException( "File: " + inputOntology + " not found");
+	        }
+	     // create an empty model
+	        Model model = ModelFactory.createDefaultModel();
+	        // read the RDF/XML file
+	        model.read(fileInputStream, "");
+	        // write it to standard out
+	        model.write(System.out); 
+	        Dataset ds = TDB2Factory.connectDataset(aRoot);
+	        Txn.executeWrite(ds, ()-> {RDFDataMgr.read(ds, inputOntology);});
+	        
+	        Txn.executeRead(ds, ()->{
+	            RDFDataMgr.write(System.out, ds, Lang.TRIG) ;
+	        }) ;
+	        //saving dataset 
+	      //closing writing
+	       ds.close();
+	        //setting up ontmodel
+		}
         
         
 	    OntModelSpec spec = new OntModelSpec(OntModelSpec.OWL_MEM);//add as parameter
@@ -1698,7 +1699,7 @@ public class Updater_Main {
 																				poi_address.addLiteral(str_zip, address_zip);
 																				poi_address.addLiteral(str_street, address_street);
 																				poi_address.addLiteral(coordinates, coordinate_Ind);
-																				poi.addLiteral(address, poi_address);
+																				poi_individual.addLiteral(address, poi_address);
 																				//adding additional properties to object
 																				
 																				
@@ -1722,6 +1723,7 @@ public class Updater_Main {
 							 
 							else {//if poi not null
 								System.out.println("poi exist");
+							
 							}//if poi not null
 						}//checking language
 		
