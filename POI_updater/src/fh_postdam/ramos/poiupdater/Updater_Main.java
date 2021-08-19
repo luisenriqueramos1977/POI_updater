@@ -2,6 +2,7 @@ package fh_postdam.ramos.poiupdater;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.crypto.BadPaddingException;
 import javax.management.loading.PrivateClassLoader;
 import javax.xml.parsers.DocumentBuilder;
 
@@ -106,6 +107,8 @@ public class Updater_Main {
 	public static DatatypeProperty str_street;
 	public static DatatypeProperty x_type;
 	public static DatatypeProperty y_type;
+	
+	
 	
 
 	
@@ -272,16 +275,16 @@ public class Updater_Main {
 				if (str_zip==null) {
 					str_zip = PoiOntModel.createDatatypeProperty(POI_NS + "zip");
 					//add domain and range
-					information.addDomain(Address);
-					information.addRange(XSD.xstring);
+					str_zip.addDomain(Address);
+					str_zip.addRange(XSD.xstring);
 				}
 				
 				str_street = PoiOntModel.getDatatypeProperty(POI_NS + "street");
 				if (str_street==null) {
 					str_street = PoiOntModel.createDatatypeProperty(POI_NS + "street");
 					//add domain and range
-					information.addDomain(Address);
-					information.addRange(XSD.xstring);
+					str_street.addDomain(Address);
+					str_street.addRange(XSD.xstring);
 				}
 				
 				
@@ -496,7 +499,6 @@ public class Updater_Main {
 		System.out.println(poi_hasVoucherOrder);
 		System.out.println(poi_description);
 		System.out.println(poi);
-		System.out.println(Weekday);
 		System.out.println(x_type);
 		System.out.println(y_type);
 		System.out.println(str_location);
@@ -1328,6 +1330,55 @@ public class Updater_Main {
 											System.out.println("node name: "+ childElement.getNodeName());
 											System.out.println("node value: "+ childElement.getTextContent());
 											
+											//getting hasVoucherOrder
+											if (childElement.getNodeName()=="hasVoucherOrder") {
+												//adding salesguideTopEntry to poi
+												System.out.println("adding hasVoucherOrder to poi ");
+												if (childElement.getTextContent() =="true") {
+													poi_individual.addLiteral(poi_hasVoucherOrder, true);
+												}
+												else {
+													poi_individual.addLiteral(poi_hasVoucherOrder, false);
+												}
+											}//endif childElement.getNodeName()=="hasOnlineOrder"
+											
+											
+											//getting hasOnlineOrder
+											if (childElement.getNodeName()=="hasOnlineOrder") {
+												//adding salesguideTopEntry to poi
+												System.out.println("adding hasOnlineOrder to poi ");
+												if (childElement.getTextContent() =="true") {
+													poi_individual.addLiteral(poi_hasOnlineOrder, true);
+												}
+												else {
+													poi_individual.addLiteral(poi_hasOnlineOrder, false);
+												}
+											}//endif childElement.getNodeName()=="hasOnlineOrder"
+											
+											//getting salesguideTopEntry
+											if (childElement.getNodeName()=="salesguideTopEntry") {
+												//adding salesguideTopEntry to poi
+												System.out.println("adding salesguideTopEntry to poi ");
+												if (childElement.getTextContent() =="true") {
+													poi_individual.addLiteral(poi_salesguideTopEntry, true);
+												}
+												else {
+													poi_individual.addLiteral(poi_salesguideTopEntry, false);
+												}
+											}//endif childElement.getNodeName()=="salesguideTopEntry"
+											
+											//getting hasSalesguide
+											if (childElement.getNodeName()=="hasSalesguide") {
+												//adding description to poi
+												System.out.println("adding hasSalesguide to poi ");
+												if (childElement.getTextContent() =="true") {
+													poi_individual.addLiteral(poi_hasSalesguide, true);
+												}
+												else {
+													poi_individual.addLiteral(poi_hasSalesguide, false);
+												}
+											}//endif childElement.getNodeName()=="description"
+											
 											//getting description
 											if (childElement.getNodeName()=="description") {
 												//adding description to poi
@@ -1540,7 +1591,7 @@ public class Updater_Main {
 															case "type":
 																//getting the category igf any
 																Individual connection_type_Ind = PoiOntModel.getIndividual(POI_NS +  childConnectionElement.getTextContent());
-																System.out.println("\t\t connection_type_individual: "+ connection_type_Ind);
+																System.out.println("\t\t current coordinates address of poi: "+ connection_type_Ind);
 																if (connection_type_Ind ==null) {//in individual category does not exist, we create it
 																	connection_type_Ind = PoiOntModel.createIndividual(POI_NS +  childConnectionElement.getTextContent(), Connection);     
 																}
@@ -1643,6 +1694,8 @@ public class Updater_Main {
 																			poi_address.addLiteral(str_street, address_street);
 																			poi_address.addLiteral(coordinates, coordinate_Ind);
 																			poi.addLiteral(address, poi_address);
+																			//adding additional properties to object
+																			
 																			
 																		}// coordinateElement.getNodeName()=="coordinate" 
 																	}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
