@@ -19,6 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.nio.file.DirectoryIteratorException;
 import java.security.spec.DSAGenParameterSpec;
 import java.text.ParseException;
@@ -155,7 +158,7 @@ public class Updater_Main {
 	 * this is a first attemp to parser and upload data
 	 */
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		
 		String POI_URL = "https://www.reiseland-brandenburg.de/poi";
 		String POI_NS = POI_URL+"#";
@@ -1289,7 +1292,7 @@ public class Updater_Main {
 		aResponse = input.nextLine();    //ans wer for first general loop
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			NodeList poiList = doc.getElementsByTagName("poi");
-			for (int i = 0; i < 3; i++) {//poiList.getLength()
+			for (int i = 0; i < poiList.getLength(); i++) {//poiList.getLength()
 				Node node = poiList.item(i);
 				if (node.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) node;
@@ -1301,423 +1304,426 @@ public class Updater_Main {
 						 String str_revision = eElement.getAttributes().getNamedItem("revision").getNodeValue();
 						 String str_name = eElement.getAttributes().getNamedItem("name").getNodeValue();
 						 String str_tstamp = eElement.getAttributes().getNamedItem("tstamp").getNodeValue();
+						 System.out.println("language: "+str_language);
 						 //getting list of node for every tag
-						 System.out.println("poi name: "+str_name);
-						 System.out.println("getting corresponding poi values and printing it (must created object) and link it");
-						 
-						 Individual poi_individual = PoiOntModel.getIndividual(POI_NS +  str_id);
-						 //adding attributes to the poi
-						
-						 if (poi_individual ==null) {
-							 //if individual does not exist, then we create it
-							 System.out.println("creating poi: "+POI_NS +  str_id);
-							 poi_individual = PoiOntModel.createIndividual( POI_NS +  str_id,  poi);
-							//doing tstamp to xsd format exchange
-						 	 XSDDateTime aDate_xsd = null;
-						 	 aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
-						 	 poi_individual.addLiteral(poi_id, str_id);
-						 	 poi_individual.addLiteral(poi_language, str_language);
-						 	 poi_individual.addLiteral(poi_revision, str_revision);
-						 	 poi_individual.addLiteral(poi_name, str_name);
-						 	 poi_individual.addLiteral(poi_tstamp, aDate_xsd);
-						 
-						 
-						 	for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
-								    Node n = childNodes.item(i2);
-									    if (n.getNodeType() == Node.ELEMENT_NODE) {
-											Element childElement = (Element) n;
-											NodeList childSubNodes = childElement.getChildNodes();
-											System.out.println("node name: "+ childElement.getNodeName());
-											System.out.println("node value: "+ childElement.getTextContent());
-											
-											//getting hasVoucherOrder
-											if (childElement.getNodeName()=="hasVoucherOrder") {
-												//adding salesguideTopEntry to poi
-												System.out.println("adding hasVoucherOrder to poi ");
-												if (childElement.getTextContent() =="true") {
-													poi_individual.addLiteral(poi_hasVoucherOrder, true);
-												}
-												else {
-													poi_individual.addLiteral(poi_hasVoucherOrder, false);
-												}
-											}//endif childElement.getNodeName()=="hasOnlineOrder"
-											
-											
-											//getting hasOnlineOrder
-											if (childElement.getNodeName()=="hasOnlineOrder") {
-												//adding salesguideTopEntry to poi
-												System.out.println("adding hasOnlineOrder to poi ");
-												if (childElement.getTextContent() =="true") {
-													poi_individual.addLiteral(poi_hasOnlineOrder, true);
-												}
-												else {
-													poi_individual.addLiteral(poi_hasOnlineOrder, false);
-												}
-											}//endif childElement.getNodeName()=="hasOnlineOrder"
-											
-											//getting salesguideTopEntry
-											if (childElement.getNodeName()=="salesguideTopEntry") {
-												//adding salesguideTopEntry to poi
-												System.out.println("adding salesguideTopEntry to poi ");
-												if (childElement.getTextContent() =="true") {
-													poi_individual.addLiteral(poi_salesguideTopEntry, true);
-												}
-												else {
-													poi_individual.addLiteral(poi_salesguideTopEntry, false);
-												}
-											}//endif childElement.getNodeName()=="salesguideTopEntry"
-											
-											//getting hasSalesguide
-											if (childElement.getNodeName()=="hasSalesguide") {
-												//adding description to poi
-												System.out.println("adding hasSalesguide to poi ");
-												if (childElement.getTextContent() =="true") {
-													poi_individual.addLiteral(poi_hasSalesguide, true);
-												}
-												else {
-													poi_individual.addLiteral(poi_hasSalesguide, false);
-												}
-											}//endif childElement.getNodeName()=="description"
-											
-											//getting description
-											if (childElement.getNodeName()=="description") {
-												//adding description to poi
-												System.out.println("adding description to poi ");
-												if (childElement.getTextContent() !=null) {
-													poi_individual.addLiteral(poi_description, childElement.getTextContent());
-												}
+						 if (str_language.equals("de")) {
+							 System.out.println("poi name: "+str_name);
+							 System.out.println("getting corresponding poi values and printing it (must created object) and link it");
+							 
+							 Individual poi_individual = PoiOntModel.getIndividual(POI_NS +  str_id);
+							 //adding attributes to the poi
+							
+							 if (poi_individual ==null) {
+								 //if individual does not exist, then we create it
+								 System.out.println("creating poi: "+POI_NS +  str_id);
+								 poi_individual = PoiOntModel.createIndividual( POI_NS +  str_id,  poi);
+								//doing tstamp to xsd format exchange
+							 	 XSDDateTime aDate_xsd = null;
+							 	 aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
+							 	 poi_individual.addLiteral(poi_id, str_id);
+							 	 poi_individual.addLiteral(poi_language, str_language);
+							 	 poi_individual.addLiteral(poi_revision, str_revision);
+							 	 poi_individual.addLiteral(poi_name, str_name);
+							 	 poi_individual.addLiteral(poi_tstamp, aDate_xsd);
+							 
+							 
+							 	for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
+									    Node n = childNodes.item(i2);
+										    if (n.getNodeType() == Node.ELEMENT_NODE) {
+												Element childElement = (Element) n;
+												NodeList childSubNodes = childElement.getChildNodes();
+												System.out.println("node name: "+ childElement.getNodeName());
+												System.out.println("node value: "+ childElement.getTextContent());
 												
-											}//endif childElement.getNodeName()=="description"
-											
-											//getting location
-											if (childElement.getNodeName()=="location") {
-												String location_id = childElement.getAttributes().getNamedItem("id").getNodeValue();
-												String location_type = childElement.getAttributes().getNamedItem("type").getNodeValue();
-												System.out.println("\t\t node location id: "+ location_id);
-												System.out.println("\t\t node location type: "+ location_type);
-												System.out.println("adding location to poi ");
-												Individual location_individual = PoiOntModel.getIndividual(POI_NS +  location_id);
-												System.out.println("\t\t location_individual: "+ location_individual);
-												if (location_individual !=null) {
-													poi_individual.addLiteral(location, location_individual);
-												}
+												//getting hasVoucherOrder
+												if (childElement.getNodeName()=="hasVoucherOrder") {
+													//adding salesguideTopEntry to poi
+													System.out.println("adding hasVoucherOrder to poi ");
+													if (childElement.getTextContent() =="true") {
+														poi_individual.addLiteral(poi_hasVoucherOrder, true);
+													}
+													else {
+														poi_individual.addLiteral(poi_hasVoucherOrder, false);
+													}
+												}//endif childElement.getNodeName()=="hasOnlineOrder"
 												
-											}//endif childElement.getNodeName()=="location"
-											
-											for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
-												Node SubNode = childSubNodes.item(i3);
-												if (SubNode.getNodeType() == Node.ELEMENT_NODE) {
-													Element childSubElement = (Element) SubNode;
-													System.out.println("\t node child name: "+ childSubElement.getNodeName());
-													System.out.println("\t node child value: "+ childSubElement.getTextContent());
+												
+												//getting hasOnlineOrder
+												if (childElement.getNodeName()=="hasOnlineOrder") {
+													//adding salesguideTopEntry to poi
+													System.out.println("adding hasOnlineOrder to poi ");
+													if (childElement.getTextContent() =="true") {
+														poi_individual.addLiteral(poi_hasOnlineOrder, true);
+													}
+													else {
+														poi_individual.addLiteral(poi_hasOnlineOrder, false);
+													}
+												}//endif childElement.getNodeName()=="hasOnlineOrder"
+												
+												//getting salesguideTopEntry
+												if (childElement.getNodeName()=="salesguideTopEntry") {
+													//adding salesguideTopEntry to poi
+													System.out.println("adding salesguideTopEntry to poi ");
+													if (childElement.getTextContent() =="true") {
+														poi_individual.addLiteral(poi_salesguideTopEntry, true);
+													}
+													else {
+														poi_individual.addLiteral(poi_salesguideTopEntry, false);
+													}
+												}//endif childElement.getNodeName()=="salesguideTopEntry"
+												
+												//getting hasSalesguide
+												if (childElement.getNodeName()=="hasSalesguide") {
+													//adding description to poi
+													System.out.println("adding hasSalesguide to poi ");
+													if (childElement.getTextContent() =="true") {
+														poi_individual.addLiteral(poi_hasSalesguide, true);
+													}
+													else {
+														poi_individual.addLiteral(poi_hasSalesguide, false);
+													}
+												}//endif childElement.getNodeName()=="description"
+												
+												//getting description
+												if (childElement.getNodeName()=="description") {
+													//adding description to poi
+													System.out.println("adding description to poi ");
+													if (childElement.getTextContent() !=null) {
+														poi_individual.addLiteral(poi_description, childElement.getTextContent());
+													}
 													
-													//for the case of classification_targetgroup_poi
-													if (childSubElement.getNodeName()=="classification_targetgroup_poi") {
-														String targetgroup_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
-														String targetgroup_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
-														System.out.println("\t\t node targetgroup_type id: "+ targetgroup_id);
-														System.out.println("\t\t node targetgroup_type type: "+ targetgroup_type);
-														System.out.println("adding targetgroup to poi ");
-														Individual targetgroup_individual = PoiOntModel.getIndividual(POI_NS +  targetgroup_id);
-														System.out.println("\t\t targetgroup_individual: "+ targetgroup_individual);
-														
-														
-													}//if childSubElement.getNodeName()=="pricerangecomplex"
+												}//endif childElement.getNodeName()=="description"
+												
+												//getting location
+												if (childElement.getNodeName()=="location") {
+													String location_id = childElement.getAttributes().getNamedItem("id").getNodeValue();
+													String location_type = childElement.getAttributes().getNamedItem("type").getNodeValue();
+													System.out.println("\t\t node location id: "+ location_id);
+													System.out.println("\t\t node location type: "+ location_type);
+													System.out.println("adding location to poi ");
+													Individual location_individual = PoiOntModel.getIndividual(POI_NS +  location_id);
+													System.out.println("\t\t location_individual: "+ location_individual);
+													if (location_individual !=null) {
+														poi_individual.addLiteral(location, location_individual);
+													}
 													
-													//for the case of classification_metainformation_poi
-													if (childSubElement.getNodeName()=="classification_metainformation_poi") {
-														String metainformation_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
-														String metainformation_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
-														System.out.println("\t\t node metainformation_type id: "+ metainformation_id);
-														System.out.println("\t\t node metainformation_type type: "+ metainformation_type);
-														System.out.println("adding metainformation to poi ");
-														Individual metainformation_individual = PoiOntModel.getIndividual(POI_NS +  metainformation_id);
-														System.out.println("\t\t metainformation_individual: "+ metainformation_individual);
+												}//endif childElement.getNodeName()=="location"
+												
+												for (int i3 = 0; i3 < childSubNodes.getLength(); i3++) {
+													Node SubNode = childSubNodes.item(i3);
+													if (SubNode.getNodeType() == Node.ELEMENT_NODE) {
+														Element childSubElement = (Element) SubNode;
+														System.out.println("\t node child name: "+ childSubElement.getNodeName());
+														System.out.println("\t node child value: "+ childSubElement.getTextContent());
 														
+														//for the case of classification_targetgroup_poi
+														if (childSubElement.getNodeName()=="classification_targetgroup_poi") {
+															String targetgroup_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+															String targetgroup_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+															System.out.println("\t\t node targetgroup_type id: "+ targetgroup_id);
+															System.out.println("\t\t node targetgroup_type type: "+ targetgroup_type);
+															System.out.println("adding targetgroup to poi ");
+															Individual targetgroup_individual = PoiOntModel.getIndividual(POI_NS +  targetgroup_id);
+															System.out.println("\t\t targetgroup_individual: "+ targetgroup_individual);
+															
+															
+														}//if childSubElement.getNodeName()=="pricerangecomplex"
 														
-													}//if childSubElement.getNodeName()=="pricerangecomplex"
-													
-													//for the case of classification
-													if (childSubElement.getNodeName()=="classification") {
-														String classification_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
-														String classification_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
-														System.out.println("\t\t node classification id: "+ classification_id);
-														System.out.println("\t\t node classification type: "+ classification_type);
-														System.out.println("\t\t adding classification to poi ");
-														Individual classification_individual = PoiOntModel.getIndividual(POI_NS +  classification_id);
-														System.out.println("\t\t classification_individual: "+ classification_individual);
-														if (classification_individual !=null) {
-															poi_individual.addLiteral(classification_category_poi, classification_individual);
-														}
+														//for the case of classification_metainformation_poi
+														if (childSubElement.getNodeName()=="classification_metainformation_poi") {
+															String metainformation_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+															String metainformation_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+															System.out.println("\t\t node metainformation_type id: "+ metainformation_id);
+															System.out.println("\t\t node metainformation_type type: "+ metainformation_type);
+															System.out.println("adding metainformation to poi ");
+															Individual metainformation_individual = PoiOntModel.getIndividual(POI_NS +  metainformation_id);
+															System.out.println("\t\t metainformation_individual: "+ metainformation_individual);
+															
+															
+														}//if childSubElement.getNodeName()=="pricerangecomplex"
 														
-													}//if childSubElement.getNodeName()=="pricerangecomplex"
-													
-													//for the case of pricerangecomplex
-													if (childSubElement.getNodeName()=="pricerangecomplex") {
-														//creating price individual
-														Individual priceInd = PoiOntModel.createIndividual(Price);
+														//for the case of classification
+														if (childSubElement.getNodeName()=="classification") {
+															String classification_id = eElement.getAttributes().getNamedItem("id").getNodeValue();
+															String classification_type = eElement.getAttributes().getNamedItem("type").getNodeValue();
+															System.out.println("\t\t node classification id: "+ classification_id);
+															System.out.println("\t\t node classification type: "+ classification_type);
+															System.out.println("\t\t adding classification to poi ");
+															Individual classification_individual = PoiOntModel.getIndividual(POI_NS +  classification_id);
+															System.out.println("\t\t classification_individual: "+ classification_individual);
+															if (classification_individual !=null) {
+																poi_individual.addLiteral(classification_category_poi, classification_individual);
+															}
+															
+														}//if childSubElement.getNodeName()=="pricerangecomplex"
 														
-														NodeList pricesChildNodes = childSubElement.getChildNodes();
-														for (int i4 = 0; i4 < pricesChildNodes.getLength(); i4++) {
-															Node priceNode = pricesChildNodes.item(i4);
-															if (priceNode.getNodeType() == Node.ELEMENT_NODE) {
-															Element childPriceElement = (Element) priceNode;
-															System.out.println("\t\t node pricerangecomplex child name: "+ childPriceElement.getNodeName());
-															System.out.println("\t\t node pricerangecomplex child value: "+ childPriceElement.getTextContent());
-															//adding details to 
-															switch (childPriceElement.getNodeName()) {
-															case "category":
-																//getting the category igf any
-																Individual price_category = PoiOntModel.getIndividual(POI_NS +  childPriceElement.getTextContent());
-																System.out.println("\t\t price_individual: "+ price_category);
-																if (price_category ==null) {//in individual category does not exist, we create it
-																	price_category = PoiOntModel.createIndividual(POI_NS +  childPriceElement.getTextContent(), Price);
-																}
-																
-																try {
-																	priceInd.addLiteral(category, price_category);
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-																break;
-															case "price":
-																try {
-																	priceInd.addLiteral(price, childPriceElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-																break;
-															}//switch
-															}//if connectionNode
-														}//for i4
-														//adding price object to poi
-														poi_individual.addLiteral(poi_price, priceInd);
-														
-													}//if childSubElement.getNodeName()=="pricerangecomplex"
-													
-													//for the case of opening hours
-													if (childSubElement.getNodeName()=="openingtimedate") {
-														NodeList connectionsChildNodes = childSubElement.getChildNodes();
-														//create opening time individual
-														
-														Individual openingtimeInd = PoiOntModel.createIndividual(OpeningHours);
-														
-														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) { 
-															Node connectionNode = connectionsChildNodes.item(i4);
-															if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
-															Element childConnectionElement = (Element) connectionNode;
-															System.out.println("\t\t node openingtimedate child name: "+ childConnectionElement.getNodeName());
-															System.out.println("\t\t node openingtimedate child value: "+ childConnectionElement.getTextContent());
-															//adding data to open hours objects
-															 switch (childConnectionElement.getNodeName()) {
-													         case "datefrom":
-													        	 try {
-													        		 openingtimeInd.addLiteral(datefrom, childConnectionElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													         	 
-													             break;
-													         case "dateto":
-													        	 try {
-													        		 openingtimeInd.addLiteral(dateto, childConnectionElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													        	 
-													        	 break;
-													         case "timefrom":
-													        	 try {
-													        		 openingtimeInd.addLiteral(timefrom, childConnectionElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													        	 
-													             break;
-													         case "timeto":
-													        	 try {
-													        		 openingtimeInd.addLiteral(timeto, childConnectionElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													        	 
-													             break;
-													         case "open":
-													        	 try {
-													        		 if (childConnectionElement.getTextContent()=="t") {
-														        		 openingtimeInd.addLiteral(open, true);
-																	} else {
-																		openingtimeInd.addLiteral(open, false);
+														//for the case of pricerangecomplex
+														if (childSubElement.getNodeName()=="pricerangecomplex") {
+															//creating price individual
+															Individual priceInd = PoiOntModel.createIndividual(Price);
+															
+															NodeList pricesChildNodes = childSubElement.getChildNodes();
+															for (int i4 = 0; i4 < pricesChildNodes.getLength(); i4++) {
+																Node priceNode = pricesChildNodes.item(i4);
+																if (priceNode.getNodeType() == Node.ELEMENT_NODE) {
+																Element childPriceElement = (Element) priceNode;
+																System.out.println("\t\t node pricerangecomplex child name: "+ childPriceElement.getNodeName());
+																System.out.println("\t\t node pricerangecomplex child value: "+ childPriceElement.getTextContent());
+																//adding details to 
+																switch (childPriceElement.getNodeName()) {
+																case "category":
+																	//getting the category igf any
+																	Individual price_category = PoiOntModel.getIndividual(POI_NS +  childPriceElement.getTextContent());
+																	System.out.println("\t\t price_individual: "+ price_category);
+																	if (price_category ==null) {//in individual category does not exist, we create it
+																		price_category = PoiOntModel.createIndividual(POI_NS +  childPriceElement.getTextContent(), Price);
 																	}
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													        	 
-													        	 break;
-													         case "weekday":
-													        	 //trying to get the specific day
-													        	 try {
-													        		 Individual aWeekday = PoiOntModel.getIndividual(POI_NS + childConnectionElement.getTextContent() );
-														        	 if (aWeekday==null) {
-														        		 aWeekday = PoiOntModel.createIndividual( POI_NS +  childConnectionElement.getTextContent(),  Weekday); 
+																	
+																	try {
+																		priceInd.addLiteral(category, price_category);
+																	} catch (Exception e) {
+																		// TODO: handle exception
 																	}
-														        	 openingtimeInd.addLiteral(weekday, aWeekday);
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-													        	 break;
-															 }
-															}//if connectionNode
-						
-														}//for i4
-														//asigning opentimedate to poi
-														System.out.println("openinghours: "+openinghours.toString());
-														poi_individual.addLiteral(openinghours, openingtimeInd);
+																	break;
+																case "price":
+																	try {
+																		priceInd.addLiteral(price, childPriceElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+																	break;
+																}//switch
+																}//if connectionNode
+															}//for i4
+															//adding price object to poi
+															poi_individual.addLiteral(poi_price, priceInd);
+															
+														}//if childSubElement.getNodeName()=="pricerangecomplex"
 														
-													}//if openingtimedate
-													
-													//for the case of connections
-													if (childSubElement.getNodeName()=="connection") {
-														Individual connectionInd = PoiOntModel.createIndividual(Connection);
-														NodeList connectionsChildNodes = childSubElement.getChildNodes();
-														for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
-															Node connectionNode = connectionsChildNodes.item(i4);
-															if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
-															Element childConnectionElement = (Element) connectionNode;
-															System.out.println("\t\t node a connection child name: "+ childConnectionElement.getNodeName());
-															System.out.println("\t\t node a connection child value: "+ childConnectionElement.getTextContent());
-															//selecting the kind of connection
-															switch (childConnectionElement.getNodeName()) {
-															case "type":
-																//getting the category igf any
-																Individual connection_type_Ind = PoiOntModel.getIndividual(POI_NS +  childConnectionElement.getTextContent());
-																System.out.println("\t\t current coordinates address of poi: "+ connection_type_Ind);
-																if (connection_type_Ind ==null) {//in individual category does not exist, we create it
-																	connection_type_Ind = PoiOntModel.createIndividual(POI_NS +  childConnectionElement.getTextContent(), Connection);     
-																}
-																
-																try {
-																	connectionInd.addLiteral(connectionType, connection_type_Ind);
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-																break;
-															case "price":
-																try {
-																	connectionInd.addLiteral(information, childConnectionElement.getTextContent());
-																} catch (Exception e) {
-																	// TODO: handle exception
-																}
-																break;
-															}//switch
-															}//if SubAddressNode
-														}//for i4
-														poi_individual.addLiteral(connection, connectionInd);
-													}//if connection
-													
-													//for the case of address
-													if (childSubElement.getNodeName()=="address") {
-														String address_location=""; 
-														String address_zip="";		 
-														String address_street="";
-														String coordinate_type="";
-														String coord_x ="";
-														String coord_y="";
-														NodeList addresChildNodes = childSubElement.getChildNodes();
-														for (int i4 = 0; i4 < addresChildNodes.getLength(); i4++) {
-															Node SubAddressNode = addresChildNodes.item(i4);
-															if (SubAddressNode.getNodeType() == Node.ELEMENT_NODE) {
-															Element childSubAddressElement = (Element) SubAddressNode;
-															System.out.println("\t\t node address child name: "+ childSubAddressElement.getNodeName());
-															System.out.println("\t\t node address child value: "+ childSubAddressElement.getTextContent());
-															switch (childSubAddressElement.getNodeName()) {
-															case "location":
-																address_location=childSubAddressElement.getTextContent();
-																break;
-															case "zip":
-																address_zip=childSubAddressElement.getTextContent();
-																break;
-															case "street":
-																address_street=childSubAddressElement.getTextContent();
-																break;
+														//for the case of opening hours
+														if (childSubElement.getNodeName()=="openingtimedate") {
+															NodeList connectionsChildNodes = childSubElement.getChildNodes();
+															//create opening time individual
+															
+															Individual openingtimeInd = PoiOntModel.createIndividual(OpeningHours);
+															
+															for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) { 
+																Node connectionNode = connectionsChildNodes.item(i4);
+																if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+																Element childConnectionElement = (Element) connectionNode;
+																System.out.println("\t\t node openingtimedate child name: "+ childConnectionElement.getNodeName());
+																System.out.println("\t\t node openingtimedate child value: "+ childConnectionElement.getTextContent());
+																//adding data to open hours objects
+																 switch (childConnectionElement.getNodeName()) {
+														         case "datefrom":
+														        	 try {
+														        		 openingtimeInd.addLiteral(datefrom, childConnectionElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														         	 
+														             break;
+														         case "dateto":
+														        	 try {
+														        		 openingtimeInd.addLiteral(dateto, childConnectionElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														        	 
+														        	 break;
+														         case "timefrom":
+														        	 try {
+														        		 openingtimeInd.addLiteral(timefrom, childConnectionElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														        	 
+														             break;
+														         case "timeto":
+														        	 try {
+														        		 openingtimeInd.addLiteral(timeto, childConnectionElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														        	 
+														             break;
+														         case "open":
+														        	 try {
+														        		 if (childConnectionElement.getTextContent()=="t") {
+															        		 openingtimeInd.addLiteral(open, true);
+																		} else {
+																			openingtimeInd.addLiteral(open, false);
+																		}
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														        	 
+														        	 break;
+														         case "weekday":
+														        	 //trying to get the specific day
+														        	 try {
+														        		 Individual aWeekday = PoiOntModel.getIndividual(POI_NS + childConnectionElement.getTextContent() );
+															        	 if (aWeekday==null) {
+															        		 aWeekday = PoiOntModel.createIndividual( POI_NS +  childConnectionElement.getTextContent(),  Weekday); 
+																		}
+															        	 openingtimeInd.addLiteral(weekday, aWeekday);
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+														        	 break;
+																 }
+																}//if connectionNode
+							
+															}//for i4
+															//asigning opentimedate to poi
+															System.out.println("openinghours: "+openinghours.toString());
+															poi_individual.addLiteral(openinghours, openingtimeInd);
+															
+														}//if openingtimedate
+														
+														//for the case of connections
+														if (childSubElement.getNodeName()=="connection") {
+															Individual connectionInd = PoiOntModel.createIndividual(Connection);
+															NodeList connectionsChildNodes = childSubElement.getChildNodes();
+															for (int i4 = 0; i4 < connectionsChildNodes.getLength(); i4++) {
+																Node connectionNode = connectionsChildNodes.item(i4);
+																if (connectionNode.getNodeType() == Node.ELEMENT_NODE) {
+																Element childConnectionElement = (Element) connectionNode;
+																System.out.println("\t\t node a connection child name: "+ childConnectionElement.getNodeName());
+																System.out.println("\t\t node a connection child value: "+ childConnectionElement.getTextContent());
+																//selecting the kind of connection
+																switch (childConnectionElement.getNodeName()) {
+																case "type":
+																	//getting the category igf any
+																	Individual connection_type_Ind = PoiOntModel.getIndividual(POI_NS +  childConnectionElement.getTextContent());
+																	System.out.println("\t\t current coordinates address of poi: "+ connection_type_Ind);
+																	if (connection_type_Ind ==null) {//in individual category does not exist, we create it
+																		connection_type_Ind = PoiOntModel.createIndividual(POI_NS +  childConnectionElement.getTextContent(), Connection);     
+																	}
+																	
+																	try {
+																		connectionInd.addLiteral(connectionType, connection_type_Ind);
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+																	break;
+																case "price":
+																	try {
+																		connectionInd.addLiteral(information, childConnectionElement.getTextContent());
+																	} catch (Exception e) {
+																		// TODO: handle exception
+																	}
+																	break;
+																}//switch
+																}//if SubAddressNode
+															}//for i4
+															poi_individual.addLiteral(connection, connectionInd);
+														}//if connection
+														
+														//for the case of address
+														if (childSubElement.getNodeName()=="address") {
+															String address_location=""; 
+															String address_zip="";		 
+															String address_street="";
+															String coordinate_type="";
+															String coord_x ="";
+															String coord_y="";
+															NodeList addresChildNodes = childSubElement.getChildNodes();
+															for (int i4 = 0; i4 < addresChildNodes.getLength(); i4++) {
+																Node SubAddressNode = addresChildNodes.item(i4);
+																if (SubAddressNode.getNodeType() == Node.ELEMENT_NODE) {
+																Element childSubAddressElement = (Element) SubAddressNode;
+																System.out.println("\t\t node address child name: "+ childSubAddressElement.getNodeName());
+																System.out.println("\t\t node address child value: "+ childSubAddressElement.getTextContent());
+																switch (childSubAddressElement.getNodeName()) {
+																case "location":
+																	address_location=childSubAddressElement.getTextContent();
+																	break;
+																case "zip":
+																	address_zip=childSubAddressElement.getTextContent();
+																	break;
+																case "street":
+																	address_street=childSubAddressElement.getTextContent();
+																	break;
 
-															}//switch childSubAddressElement.getNodeName()
-															
-															
-															//for the case of coordinates
-															if (childSubAddressElement.getNodeName()=="coordinates") {
-																NodeList coordinatesChildNodes = childSubAddressElement.getChildNodes();
-																for (int i5 = 0; i5 < coordinatesChildNodes.getLength(); i5++) {
-																	Node coordinateNode = coordinatesChildNodes.item(i5);
-																	if (coordinateNode.getNodeType() == Node.ELEMENT_NODE) {
-																		Element coordinateElement = (Element) coordinateNode;
-																		System.out.println("\t\t\t node address coordinates name: "+ coordinateElement.getNodeName());																
-																		//for the case of a coordinate
-																		if (coordinateElement.getNodeName()=="coordinate") {
-																			
-																			NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
-																			for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
-																				Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
-																				if (coordinateNodeAtt.getNodeType() == Node.ELEMENT_NODE) {
-																				Element coordinateElementAtt = (Element) coordinateNodeAtt;
-																				System.out.println("\t\t\t\t node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
-																				System.out.println("\t\t\t\t node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
-																				//building coordinate  object
-																				if (coordinateElementAtt.getNodeName()=="x") {
-																					coord_x=coordinateElementAtt.getTextContent();
-																				} else if (coordinateElementAtt.getNodeName()=="y") {
-																					coord_y=coordinateElementAtt.getTextContent();
-																				} else if (coordinateElementAtt.getNodeName()=="type") {
-																					coordinate_type=coordinateElementAtt.getTextContent();
-																				}
-																				}//if coordinateNodeAtt
-																			}//for coordinateChildAttributes
-																			//building the coordinate instance
-																			String coordinate_x_y = "coordinate_"+coord_x+"_"+coord_y;
-																			String address_x_y = "address_"+coord_x+"_"+coord_y;
-																			//if exist create instance, else build it
-																			//getting the category igf any
-																			Individual coordinate_Ind = PoiOntModel.getIndividual(POI_NS +  coordinate_x_y);
-																			
-																			System.out.println("\t\t connection_type_individual: "+ coordinate_Ind);
-																			if (coordinate_Ind==null) {
-																				coordinate_Ind= PoiOntModel.createIndividual(POI_NS +  coordinate_x_y, Coordinate);
-																				//add values
-																				coordinate_Ind.addLiteral(x_type, coord_x);
-																				coordinate_Ind.addLiteral(y_type, coord_y);
-																				coordinate_Ind.addLiteral(poi_coordinateType, coordinate_type);
-																			} //if (coordinate_Ind==null)
-																			//creating address, adding coordinates and to poi
-																			Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);                     
-																			poi_address.addLiteral(str_location, address_location);
-																			poi_address.addLiteral(str_zip, address_zip);
-																			poi_address.addLiteral(str_street, address_street);
-																			poi_address.addLiteral(coordinates, coordinate_Ind);
-																			poi.addLiteral(address, poi_address);
-																			//adding additional properties to object
-																			
-																			
-																		}// coordinateElement.getNodeName()=="coordinate" 
-																	}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
-																}//for coordinatesChildNodes.getLength()
-															}//if coordinates
-															
-															}//if SubAddressNode
-														}//for i4
-													}//if childSubElement address
-					
-												}//if SubNode
-											}//for i3
-										
-										//System.out.println("node value: "+childElement.getTextContent());
-										//depending of the node we proceed to do a given operation
-								    }//end if for child
-							 }//for child
-						} //if poi not null
-						 
-						else {//if poi not null
-							System.out.println("existing poi_individual: "+poi_individual.toString());
-						}//if poi not null
+																}//switch childSubAddressElement.getNodeName()
+																
+																
+																//for the case of coordinates
+																if (childSubAddressElement.getNodeName()=="coordinates") {
+																	NodeList coordinatesChildNodes = childSubAddressElement.getChildNodes();
+																	for (int i5 = 0; i5 < coordinatesChildNodes.getLength(); i5++) {
+																		Node coordinateNode = coordinatesChildNodes.item(i5);
+																		if (coordinateNode.getNodeType() == Node.ELEMENT_NODE) {
+																			Element coordinateElement = (Element) coordinateNode;
+																			System.out.println("\t\t\t node address coordinates name: "+ coordinateElement.getNodeName());																
+																			//for the case of a coordinate
+																			if (coordinateElement.getNodeName()=="coordinate") {
+																				
+																				NodeList coordinateChildAttributes = coordinateElement.getChildNodes();
+																				for (int i6 = 0; i6 < coordinateChildAttributes.getLength(); i6++) {
+																					Node coordinateNodeAtt = coordinateChildAttributes.item(i6);
+																					if (coordinateNodeAtt.getNodeType() == Node.ELEMENT_NODE) {
+																					Element coordinateElementAtt = (Element) coordinateNodeAtt;
+																					System.out.println("\t\t\t\t node coordinate attribute name: "+ coordinateElementAtt.getNodeName());
+																					System.out.println("\t\t\t\t node coordinate attribute value: "+ coordinateElementAtt.getTextContent());
+																					//building coordinate  object
+																					if (coordinateElementAtt.getNodeName()=="x") {
+																						coord_x=coordinateElementAtt.getTextContent();
+																					} else if (coordinateElementAtt.getNodeName()=="y") {
+																						coord_y=coordinateElementAtt.getTextContent();
+																					} else if (coordinateElementAtt.getNodeName()=="type") {
+																						coordinate_type=coordinateElementAtt.getTextContent();
+																					}
+																					}//if coordinateNodeAtt
+																				}//for coordinateChildAttributes
+																				//building the coordinate instance
+																				String coordinate_x_y = "coordinate_"+coord_x+"_"+coord_y;
+																				String address_x_y = "address_"+coord_x+"_"+coord_y;
+																				//if exist create instance, else build it
+																				//getting the category igf any
+																				Individual coordinate_Ind = PoiOntModel.getIndividual(POI_NS +  coordinate_x_y);
+																				
+																				System.out.println("\t\t connection_type_individual: "+ coordinate_Ind);
+																				if (coordinate_Ind==null) {
+																					coordinate_Ind= PoiOntModel.createIndividual(POI_NS +  coordinate_x_y, Coordinate);
+																					//add values
+																					coordinate_Ind.addLiteral(x_type, coord_x);
+																					coordinate_Ind.addLiteral(y_type, coord_y);
+																					coordinate_Ind.addLiteral(poi_coordinateType, coordinate_type);
+																				} //if (coordinate_Ind==null)
+																				//creating address, adding coordinates and to poi
+																				Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);                     
+																				poi_address.addLiteral(str_location, address_location);
+																				poi_address.addLiteral(str_zip, address_zip);
+																				poi_address.addLiteral(str_street, address_street);
+																				poi_address.addLiteral(coordinates, coordinate_Ind);
+																				poi.addLiteral(address, poi_address);
+																				//adding additional properties to object
+																				
+																				
+																			}// coordinateElement.getNodeName()=="coordinate" 
+																		}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
+																	}//for coordinatesChildNodes.getLength()
+																}//if coordinates
+																
+																}//if SubAddressNode
+															}//for i4
+														}//if childSubElement address
+						
+													}//if SubNode
+												}//for i3
+											
+											//System.out.println("node value: "+childElement.getTextContent());
+											//depending of the node we proceed to do a given operation
+									    }//end if for child
+								 }//for child
+							} //if point null
+							 
+							else {//if poi not null
+								System.out.println("poi exist");
+							}//if poi not null
+						}//checking language
 		
 						 
 					} catch (Exception e) {
@@ -1727,43 +1733,28 @@ public class Updater_Main {
 				}//endif poiList
 			}//end for poiList
 		}//end if for poi
+
+		//System.out.println("printing onto model");
+		//PoiOntModel.writeAll(System.out, "RDF/XML");
 		
 		
 		System.out.println("Do you want to update rdf file? ");
 		aResponse = input.nextLine();    //ans wer for first general loop
 		if (aResponse.equalsIgnoreCase("Yes")) {
 			//printing result
-			//defining basic variables
-			FileOutputStream poi_out_file = null;
-	        File poi_file;
 	        //reading data
 			try {
-				poi_file = new File("C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi_parsed.rdf");
-				poi_out_file = new FileOutputStream(poi_file);
-				// if file doesnt exists, then create it
-	            if (!poi_file.exists()) {
-	            	poi_file.createNewFile();
-	            }
-	            //adding content
-	         // get the content in bytes
-	            byte[] contentInBytes = PoiOntModel.toString().getBytes();
-	            poi_out_file.write(contentInBytes);
-	            poi_out_file.flush();
-	            poi_out_file.close();
+				OutputStream       outputStream       = new FileOutputStream("C:\\Users\\luis.ramos\\Desktop\\ontologies\\ontologies\\poi_parsed.rdf");
+	            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
+	            PoiOntModel.writeAll(outputStreamWriter, "RDF/XML");
+	            outputStreamWriter.close();
+	            
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} finally {
-	            try {
-	                if (poi_out_file != null) {
-	                	poi_out_file.close();
-	                }
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            }
-	        }//finish file writing
-
+			} 
 		}//endif file writing
+		
 		
 		//saving and closing comunication with origin databases
 		PoiDataset.commit();
