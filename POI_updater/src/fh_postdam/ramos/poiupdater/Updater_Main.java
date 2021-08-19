@@ -101,6 +101,12 @@ public class Updater_Main {
 	public static DatatypeProperty open;
 	public static DatatypeProperty price;
 	public static DatatypeProperty information;
+	public static DatatypeProperty str_location;
+	public static DatatypeProperty str_zip;
+	public static DatatypeProperty str_street;
+	public static DatatypeProperty x_type;
+	public static DatatypeProperty y_type;
+	
 
 	
 	
@@ -217,6 +223,9 @@ public class Updater_Main {
 			    OpeningHours= PoiOntModel.getOntClass(POI_NS + "OpeningHours" );
 			    Connection= PoiOntModel.getOntClass(POI_NS + "Connection" );
 			    Address = PoiOntModel.getOntClass(POI_NS + "Address" );
+			    poi = PoiOntModel.getOntClass(POI_NS + "poi" );
+				Weekday = PoiOntModel.getOntClass(POI_NS + "Weekday" );
+				Price  = PoiOntModel.getOntClass(POI_NS + "Price" );
 			    
 		    	
 			} catch (Exception e) {
@@ -226,14 +235,56 @@ public class Updater_Main {
 				OpeningHours= PoiOntModel.createClass(POI_NS + "OpeningHours" );
 				Connection= PoiOntModel.createClass(POI_NS + "Connection" );
 				Address = PoiOntModel.createClass(POI_NS + "Address" );
+				poi = PoiOntModel.createClass(POI_NS + "poi" );
+				Weekday = PoiOntModel.createClass(POI_NS + "Weekday" );
+				Price  = PoiOntModel.createClass(POI_NS + "Price" );
 			}
 		 
 
 			try {
 				
-				poi = PoiOntModel.getOntClass(POI_NS + "poi" );
-				Weekday = PoiOntModel.getOntClass(POI_NS + "Weekday" );
-				Price  = PoiOntModel.getOntClass(POI_NS + "Price" );
+				
+				x_type = PoiOntModel.getDatatypeProperty(POI_NS + "x_type");
+				if (x_type==null) {
+					x_type = PoiOntModel.createDatatypeProperty(POI_NS + "x_type");
+					//add domain and range
+					information.addDomain(Coordinate);
+					information.addRange(XSD.xstring);
+				}
+				
+			    y_type = PoiOntModel.getDatatypeProperty(POI_NS + "y_type");
+				if (y_type==null) {
+					y_type = PoiOntModel.createDatatypeProperty(POI_NS + "y_type");
+					//add domain and range
+					information.addDomain(Coordinate);
+					information.addRange(XSD.xstring);
+				}
+								
+				str_location = PoiOntModel.getDatatypeProperty(POI_NS + "location");
+				if (str_location==null) {
+					str_location = PoiOntModel.createDatatypeProperty(POI_NS + "location");
+					//add domain and range
+					information.addDomain(Address);
+					information.addRange(XSD.xstring);
+				}
+
+				str_zip = PoiOntModel.getDatatypeProperty(POI_NS + "zip");
+				if (str_zip==null) {
+					str_zip = PoiOntModel.createDatatypeProperty(POI_NS + "zip");
+					//add domain and range
+					information.addDomain(Address);
+					information.addRange(XSD.xstring);
+				}
+				
+				str_street = PoiOntModel.getDatatypeProperty(POI_NS + "street");
+				if (str_street==null) {
+					str_street = PoiOntModel.createDatatypeProperty(POI_NS + "street");
+					//add domain and range
+					information.addDomain(Address);
+					information.addRange(XSD.xstring);
+				}
+				
+				
 				
 				information = PoiOntModel.getDatatypeProperty(POI_NS + "information");
 				if (information==null) {
@@ -446,6 +497,12 @@ public class Updater_Main {
 		System.out.println(poi_description);
 		System.out.println(poi);
 		System.out.println(Weekday);
+		System.out.println(x_type);
+		System.out.println(y_type);
+		System.out.println(str_location);
+		System.out.println(str_zip);
+		System.out.println(str_street);
+		
 
 
 		/*
@@ -1522,7 +1579,18 @@ public class Updater_Main {
 															Element childSubAddressElement = (Element) SubAddressNode;
 															System.out.println("\t\t node address child name: "+ childSubAddressElement.getNodeName());
 															System.out.println("\t\t node address child value: "+ childSubAddressElement.getTextContent());
-															
+															switch (childSubAddressElement.getNodeName()) {
+															case "location":
+																address_location=childSubAddressElement.getTextContent();
+																break;
+															case "zip":
+																address_zip=childSubAddressElement.getTextContent();
+																break;
+															case "street":
+																address_street=childSubAddressElement.getTextContent();
+																break;
+
+															}//switch childSubAddressElement.getNodeName()
 															
 															
 															//for the case of coordinates
@@ -1559,19 +1627,23 @@ public class Updater_Main {
 																			//if exist create instance, else build it
 																			//getting the category igf any
 																			Individual coordinate_Ind = PoiOntModel.getIndividual(POI_NS +  coordinate_x_y);
+																			
 																			System.out.println("\t\t connection_type_individual: "+ coordinate_Ind);
 																			if (coordinate_Ind==null) {
-																				
-																			} 
+																				coordinate_Ind= PoiOntModel.createIndividual(POI_NS +  coordinate_x_y, Coordinate);
+																				//add values
+																				coordinate_Ind.addLiteral(x_type, coord_x);
+																				coordinate_Ind.addLiteral(y_type, coord_y);
+																				coordinate_Ind.addLiteral(poi_coordinateType, coordinate_type);
+																			} //if (coordinate_Ind==null)
 																			//creating address, adding coordinates and to poi
-																			Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);
-																			poi_address.addLiteral(location, d);
-																			poi_address.addLiteral(zip, d);
-																			poi_address.addLiteral(street, d);
+																			Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);                     
+																			poi_address.addLiteral(str_location, address_location);
+																			poi_address.addLiteral(str_zip, address_zip);
+																			poi_address.addLiteral(str_street, address_street);
 																			poi_address.addLiteral(coordinates, coordinate_Ind);
 																			poi.addLiteral(address, poi_address);
 																			
-															
 																		}// coordinateElement.getNodeName()=="coordinate" 
 																	}//coordinateNode.getNodeType() == Node.ELEMENT_NODE
 																}//for coordinatesChildNodes.getLength()
@@ -1591,8 +1663,7 @@ public class Updater_Main {
 						} //if poi not null
 						 
 						else {//if poi not null
-							System.out.println("poi_individual: "+poi_individual);
-							
+							System.out.println("existing poi_individual: "+poi_individual.toString());
 						}//if poi not null
 		
 						 
@@ -1640,7 +1711,7 @@ public class Updater_Main {
 	        }//finish file writing
 
 		}//endif file writing
-
+		
 		//saving and closing comunication with origin databases
 		PoiDataset.commit();
 		PoiDataset.close();
