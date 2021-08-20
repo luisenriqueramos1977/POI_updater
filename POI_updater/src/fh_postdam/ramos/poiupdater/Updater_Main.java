@@ -77,7 +77,7 @@ public class Updater_Main {
 	private static OntClass  Weekday;
 	private static OntClass  Price;
 	private static OntClass  Connection;
-	private static OntClass  Address;
+	private static OntClass  Addresses;
 
 	
 	
@@ -229,7 +229,7 @@ public class Updater_Main {
 			    Excursionsregion = PoiOntModel.getOntClass(POI_NS + "Excursionsregion" );
 			    OpeningHours= PoiOntModel.getOntClass(POI_NS + "OpeningHours" );
 			    Connection= PoiOntModel.getOntClass(POI_NS + "Connection" );
-			    Address = PoiOntModel.getOntClass(POI_NS + "Address" );
+			    Addresses = PoiOntModel.getOntClass(POI_NS + "Addresses" );
 			    poi = PoiOntModel.getOntClass(POI_NS + "poi" );
 				Weekday = PoiOntModel.getOntClass(POI_NS + "Weekday" );
 				Price  = PoiOntModel.getOntClass(POI_NS + "Price" );
@@ -241,7 +241,7 @@ public class Updater_Main {
 				Excursionsregion = PoiOntModel.createClass( POI_NS + "Excursionsregion" );
 				OpeningHours= PoiOntModel.createClass(POI_NS + "OpeningHours" );
 				Connection= PoiOntModel.createClass(POI_NS + "Connection" );
-				Address = PoiOntModel.createClass(POI_NS + "Address" );
+				Addresses = PoiOntModel.createClass(POI_NS + "Addresses" );
 				poi = PoiOntModel.createClass(POI_NS + "poi" );
 				Weekday = PoiOntModel.createClass(POI_NS + "Weekday" );
 				Price  = PoiOntModel.createClass(POI_NS + "Price" );
@@ -271,7 +271,7 @@ public class Updater_Main {
 				if (str_location==null) {
 					str_location = PoiOntModel.createDatatypeProperty(POI_NS + "location");
 					//add domain and range
-					information.addDomain(Address);
+					information.addDomain(Addresses);
 					information.addRange(XSD.xstring);
 				}
 
@@ -279,7 +279,7 @@ public class Updater_Main {
 				if (str_zip==null) {
 					str_zip = PoiOntModel.createDatatypeProperty(POI_NS + "zip");
 					//add domain and range
-					str_zip.addDomain(Address);
+					str_zip.addDomain(Addresses);
 					str_zip.addRange(XSD.xstring);
 				}
 				
@@ -287,7 +287,7 @@ public class Updater_Main {
 				if (str_street==null) {
 					str_street = PoiOntModel.createDatatypeProperty(POI_NS + "street");
 					//add domain and range
-					str_street.addDomain(Address);
+					str_street.addDomain(Addresses);
 					str_street.addRange(XSD.xstring);
 				}
 				
@@ -562,6 +562,8 @@ public class Updater_Main {
 				         if ((str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null) ) {
 					         //checking if individual exist
 					 		 Individual PoiInstance = JenaUtilities.getIndividualbyPropertyvalue(PoiOntModel, poi_id, str_id);
+					 		 //adding the label
+					 		 PoiInstance.addLabel(str_name, str_language);
 					 		 if (PoiInstance == null) {
 						 		 //System.out.println("null loop ");
 					 			 //conversion to valid time stamp
@@ -1006,6 +1008,7 @@ public class Updater_Main {
 						 //checking if location exist in kb
 						 Individual aLocation = PoiOntModel.getIndividual(POI_NS + str_id );
 						 
+						 
 						 if ((aLocation == null) && (str_language != null)&& (str_revision != null) && (str_name != null) && (str_tstamp!= null) && (str_id!= null)) {
 							 //if no location and all attributes are present, we fill out the objekt
 							//doing tstamp to xsd format exchange
@@ -1013,6 +1016,7 @@ public class Updater_Main {
 					 		aDate_xsd=JenaUtilities.timestamptoJenaDate_xsd(str_tstamp);
 							 //creating individual and adding attributes
 							 Individual PoiLocation = PoiOntModel.createIndividual( POI_NS +  str_id,  Location);
+							 PoiLocation.addLabel(str_name, str_language);
 					 		 PoiLocation.addLiteral(poi_id, str_id);
 					 		 PoiLocation.addLiteral(poi_language, str_language);
 					 		 PoiLocation.addLiteral(poi_revision, str_revision);
@@ -1036,7 +1040,7 @@ public class Updater_Main {
 										         System.out.println("str_id_node: "+str_id_node);
 										       //searching for department individual in ontmodel
 											 	Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-											 	PoiLocation.addLiteral(district, PoiInstance);
+											 	PoiLocation..addProperty(district, PoiInstance);
 											    System.out.println("instance district: "+PoiInstance.toString());
 											} catch (Exception e) {
 												// TODO: handle exception
@@ -1066,7 +1070,7 @@ public class Updater_Main {
 										         System.out.println("str_id_nodedepartment: "+str_id_node);
 										         //searching for department individual in ontmodel
 											 		Individual PoiInstance = PoiOntModel.getIndividual(POI_NS + str_id_node );
-											 		PoiLocation.addLiteral(department, PoiInstance);
+											 		PoiLocation.addProperty(department, PoiInstance);
 											        System.out.println("instance department: "+PoiInstance.toString());
 
 											} catch (Exception e) {
@@ -1326,6 +1330,7 @@ public class Updater_Main {
 							 	 poi_individual.addLiteral(poi_revision, str_revision);
 							 	 poi_individual.addLiteral(poi_name, str_name);
 							 	 poi_individual.addLiteral(poi_tstamp, aDate_xsd);
+							 	 poi_individual.addLabel(str_name, str_language);
 							 
 							 
 							 	for (int i2 = 0; i2 < childNodes.getLength(); i2++) {
@@ -1694,12 +1699,12 @@ public class Updater_Main {
 																					coordinate_Ind.addLiteral(poi_coordinateType, coordinate_type);
 																				} //if (coordinate_Ind==null)
 																				//creating address, adding coordinates and to poi
-																				Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Address);                     
+																				Individual poi_address = PoiOntModel.createIndividual(POI_NS +  address_x_y, Addresses);                     
 																				poi_address.addLiteral(str_location, address_location);
 																				poi_address.addLiteral(str_zip, address_zip);
 																				poi_address.addLiteral(str_street, address_street);
-																				poi_address.addLiteral(coordinates, coordinate_Ind);
-																				poi_individual.addLiteral(address, poi_address);
+																				poi_address.addProperty(coordinates, coordinate_Ind);
+																				poi_individual.addProperty(address, poi_address);
 																				//adding additional properties to object
 																				
 																				
