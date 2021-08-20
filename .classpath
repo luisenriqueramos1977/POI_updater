@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="POI_updater/src"/>
+	<classpathentry kind="output" path="POI_updater/target/classes"/>
+</classpath>
